@@ -73,8 +73,8 @@
         .chapter-box h2.p2 { font-size: var(--fs-xxl); font-weight: 700; color: var(--color-accent); text-align: center; margin-bottom: 1.5rem; }
         .chapter-box p.p1 { font-size: var(--fs-large); text-align: center; font-weight: 600; margin-bottom: 1rem; }
         .chapter-box p.p4 { font-size: var(--fs-large); font-weight: 700; color: var(--color-heading); margin-top: 2rem; margin-bottom: 1rem; text-align: center; border-top: 1px dashed var(--color-border); padding-top: 1.5rem; }
-        .chapter-box p.p6 { font-family: var(--font-gita); font-size: var(--fs-gita); line-height: 1.8; margin-bottom: 0.25rem; padding: 0.5rem 0.5rem 0.5rem 3.5rem; position: relative; border-radius: var(--radius-sm); text-align: center; }
-        .chapter-box p.p6::before { content: attr(data-number); position: absolute; left: 0.5rem; top: 0.5rem; font-size: var(--fs-small); color: var(--color-accent); font-weight: 700; font-family: var(--font-main); }
+        .chapter-box p.p6 { font-family: var(--font-gita); font-size: var(--fs-gita); line-height: 1.8; margin-bottom: 0.25rem; padding: 0.5rem; /* <<< Removed left padding for number >>> */ position: relative; border-radius: var(--radius-sm); text-align: center; }
+        /* .chapter-box p.p6::before { ... } <<< Removed rule for shloka number >>> */
         .chapter-box p.p7 { font-size: var(--fs-base); font-style: italic; color: var(--color-text-dim); text-align: center; margin-top: 2rem; border-top: 1px solid var(--color-border); padding-top: 1rem; }
         .chapter-box p.p3, .chapter-box p.p5 { margin-bottom: 1rem; }
         /* श्लोक हायलाईट ॲनिमेशन */
@@ -117,8 +117,8 @@
             .content-container { padding: 1rem; }
             #auto-toc-container { grid-template-columns: 1fr; }
             .chapter-box { padding: 1.5rem; }
-            .chapter-box p.p6 { padding: 0.5rem 0 0.5rem 2.5rem; text-align: center; }
-            .chapter-box p.p6::before { left: 0; }
+            .chapter-box p.p6 { padding: 0.5rem; /* <<< Remove left padding >>> */ text-align: center; }
+            /* .chapter-box p.p6::before { left: 0; } <<< Removed >>> */
         }
     </style>
 </head>
@@ -2557,10 +2557,9 @@
 
                 if (className === 'p2') { 
                     if (currentChapter > 0 && currentChapterBoxHTML) chapterBoxesHTMLMap.set(currentChapter, currentChapterBoxHTML + '</div>');
-                    currentChapter++; currentShloka = 0; currentChapterTitle = text.replace('अथ ', '').replace('ऽध्यायः', ''); // Get name only
-                     // Remove chapter number from title for display in grid
-                    const displayTitle = currentChapterTitle.replace(/[\u0966-\u096F\s]+$/, '').trim(); // Remove trailing numbers/space
-                    tocContainer.innerHTML += `<li><a href="#chapter-${currentChapter}" class="chapter-list-item" data-chap-num="${currentChapter}">${displayTitle}</a></li>`;
+                    currentChapter++; currentShloka = 0; 
+                    currentChapterTitle = text.replace('अथ ', '').replace('ऽध्यायः', '').replace(/[\u0966-\u096F\s]+$/, '').trim(); // Get name only, remove trailing numbers/space
+                    tocContainer.innerHTML += `<li><a href="#chapter-${currentChapter}" class="chapter-list-item" data-chap-num="${currentChapter}">${currentChapterTitle}</a></li>`; // <<< Number removed from display text >>>
                     currentChapterBoxHTML = `<div class="chapter-box hidden" id="chapter-${currentChapter}">${originalHTML}`; 
                 } else if (className === 'p4') { 
                     currentSpeaker = text; if (!speakerShlokas.has(currentSpeaker)) speakerShlokas.set(currentSpeaker, []);
@@ -2577,6 +2576,7 @@
                         cleanText.split('।').filter(p => p.trim()).forEach(paad => allPaads.push({ text: paad.trim(), location: location }));
                         addWordsToMap(cleanText, location, wordMap);
                         if (currentSpeaker) { const firstWords = cleanText.split(' ').slice(0, 3).join(' ') + '...'; speakerShlokas.get(currentSpeaker).push({ location: location, text: firstWords }); }
+                        // Add data-number attribute even though ::before is removed, might be useful later
                         currentChapterBoxHTML += `<p class="p6" id="c${currentChapter}s${currentShloka}" data-number="${location}" data-loc="${location}">${elementInnerHTML}</p>`;
                     } else {
                         const prev = allShlokas[allShlokas.length - 1];
@@ -2584,6 +2584,7 @@
                             prev.text += ' ' + cleanText; prev.originalHTML += `<br>${elementInnerHTML}`; 
                             cleanText.split('।').filter(p => p.trim()).forEach(paad => allPaads.push({ text: paad.trim(), location: location }));
                             addWordsToMap(cleanText, location, wordMap);
+                            // Append continuation HTML correctly within the last <p> tag
                             currentChapterBoxHTML = currentChapterBoxHTML.replace(/<\/p>$/, `<br>${elementInnerHTML}</p>`); 
                         } else { currentChapterBoxHTML += originalHTML; }
                     }
@@ -2663,8 +2664,8 @@
         function activateChapter(chapterId) {
              console.log(`Activating chapter: ${chapterId}`);
              document.querySelectorAll('#chapter-content-wrapper .chapter-box').forEach(box => { 
-                 box.classList.toggle('active', box.id === chapterId); // Use active class
-                 box.classList.toggle('hidden', box.id !== chapterId); // Hide others
+                 box.classList.toggle('active', box.id === chapterId); 
+                 box.classList.toggle('hidden', box.id !== chapterId); 
              }); 
              const targetBox = document.getElementById(chapterId);
              if (targetBox) targetBox.classList.remove('hidden'); 
@@ -2685,7 +2686,7 @@
             activateSection('gita-path'); // Activate full chapter view
             activateChapter(chapterId); // Activate the specific chapter box
             
-            // Use a slight delay to ensure the chapter is visible before scrolling/highlighting
+            // Use a slight delay to ensure the DOM is ready after activateChapter
             setTimeout(() => {
                 const shlokaElement = document.getElementById(shlokaId); 
                 const shlokaObj = fullDataCache.allShlokas.find(s => s.location === location);
@@ -2697,12 +2698,13 @@
                     if (wordToHighlight) { 
                         try { 
                             const safeWord = wordToHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
-                            const regex = new RegExp(`(?![^<]*>|[^<>]*<\\/)${safeWord}`, 'gi'); 
+                            // Regex to avoid matching inside HTML tags - improved robustness
+                            const regex = new RegExp(`(?<!<[^>]*)${safeWord}(?![^<]*>)`, 'gi');
                             shlokaElement.innerHTML = shlokaElement.innerHTML.replace(regex, '<mark>$&</mark>'); 
                         } catch (e) { console.error("Highlight regex failed:", e); } 
                     }
                     
-                    // Scroll & Highlight Shloka - Use requestAnimationFrame for smoother experience
+                    // Scroll & Highlight Shloka - Use requestAnimationFrame
                     requestAnimationFrame(() => {
                         shlokaElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
                         document.querySelectorAll('.shloka-highlight').forEach(el => el.classList.remove('shloka-highlight'));
@@ -2715,7 +2717,7 @@
                      const el = document.getElementById(shlokaId); // Try finding element again
                      if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                 }
-            }, 50); // 50ms delay for DOM updates
+            }, 50); // 50ms delay
         }
         
         // --- 7. Global Search ---
