@@ -54,7 +54,7 @@
         /* अध्याय ग्रिड (Default View) */
         #chapter-grid h2 { font-size: var(--fs-xxl); margin-bottom: 1.5rem; border-bottom: 2px solid var(--color-accent); padding-bottom: 0.5rem; }
         #auto-toc-container { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-        #auto-toc-container a { display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; border-radius: var(--radius-md); font-size: var(--fs-large); font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); transition: var(--transition-fast); }
+        #auto-toc-container a { display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; border-radius: var(--radius-md); font-size: var(--fs-large); font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); transition: var(--transition-fast); text-align: center; }
         #auto-toc-container a:hover { transform: translateY(-3px); box-shadow: 0 5px 15px var(--color-shadow); border-color: var(--color-accent); }
         /* शोध */
         #search-page h2 { font-size: var(--fs-xxl); margin-bottom: 1.5rem; }
@@ -73,7 +73,7 @@
         .chapter-box h2.p2 { font-size: var(--fs-xxl); font-weight: 700; color: var(--color-accent); text-align: center; margin-bottom: 1.5rem; }
         .chapter-box p.p1 { font-size: var(--fs-large); text-align: center; font-weight: 600; margin-bottom: 1rem; }
         .chapter-box p.p4 { font-size: var(--fs-large); font-weight: 700; color: var(--color-heading); margin-top: 2rem; margin-bottom: 1rem; text-align: center; border-top: 1px dashed var(--color-border); padding-top: 1.5rem; }
-        .chapter-box p.p6 { font-family: var(--font-gita); font-size: var(--fs-gita); line-height: 1.8; margin-bottom: 0.25rem; padding: 0.5rem 0.5rem 0.5rem 3.5rem; position: relative; border-radius: var(--radius-sm); text-align: center; /* <<< Text Align Center >>> */ }
+        .chapter-box p.p6 { font-family: var(--font-gita); font-size: var(--fs-gita); line-height: 1.8; margin-bottom: 0.25rem; padding: 0.5rem 0.5rem 0.5rem 3.5rem; position: relative; border-radius: var(--radius-sm); text-align: center; }
         .chapter-box p.p6::before { content: attr(data-number); position: absolute; left: 0.5rem; top: 0.5rem; font-size: var(--fs-small); color: var(--color-accent); font-weight: 700; font-family: var(--font-main); }
         .chapter-box p.p7 { font-size: var(--fs-base); font-style: italic; color: var(--color-text-dim); text-align: center; margin-top: 2rem; border-top: 1px solid var(--color-border); padding-top: 1rem; }
         .chapter-box p.p3, .chapter-box p.p5 { margin-bottom: 1rem; }
@@ -126,7 +126,7 @@
     <div id="initial-loading"><p>गीता ॲप लोड होत आहे...</p><div class="loading-spinner"></div></div>
 
     <div id="raw-gita-data" style="display: none;">
-      
+        
 <p class="p1"><span class="s1">।। श्रीपरमात्मने नमः ।।</span></p>
 <p class="p2"><span class="s1">अथ प्रथमोऽध्यायः</span></p>
 <p class="p3"><span class="s2"></span><br></p>
@@ -2533,54 +2533,35 @@
     </div>
 
     <script>
-    // Wrap initialization in a function
     function initializeGitaApp() {
         console.time("AppInit"); 
 
         // --- Global Variables ---
-        let fontScale = 1;
-        let lastNavigationSourceId = 'chapter-grid'; 
-        let fullDataCache = null; // Holds all parsed data
-        // No need for isDataParsed flags anymore, parsing happens upfront
+        let fontScale = 1; let lastNavigationSourceId = 'chapter-grid'; let fullDataCache = null;
 
         // --- DOM Elements ---
-        const rawDataEl = document.getElementById('raw-gita-data');
-        const tocContainer = document.getElementById('auto-toc-container');
-        const chapterWrapper = document.getElementById('chapter-content-wrapper');
-        const searchResultsEl = document.getElementById('search-results');
-        const searchBar = document.getElementById('global-search-bar');
-        const contentContainer = document.querySelector('.content-container');
-        const contentSections = document.querySelectorAll('.content-container > .content-section');
-        const navLinks = document.querySelectorAll('.nav-link');
-        const logoLink = document.getElementById('logo-link');
-        const backToNavBtn = document.getElementById('back-to-nav-btn');
-        const indexTabsContainer = document.querySelector('.index-tabs');
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const initialLoadingEl = document.getElementById('initial-loading');
-        const appContainerEl = document.querySelector('.app-container');
+        const rawDataEl = document.getElementById('raw-gita-data'); const tocContainer = document.getElementById('auto-toc-container'); const chapterWrapper = document.getElementById('chapter-content-wrapper'); const searchResultsEl = document.getElementById('search-results'); const searchBar = document.getElementById('global-search-bar'); const contentContainer = document.querySelector('.content-container'); const contentSections = document.querySelectorAll('.content-container > .content-section'); const navLinks = document.querySelectorAll('.nav-link'); const logoLink = document.getElementById('logo-link'); const backToNavBtn = document.getElementById('back-to-nav-btn'); const indexTabsContainer = document.querySelector('.index-tabs'); const tabButtons = document.querySelectorAll('.tab-button'); const tabContents = document.querySelectorAll('.tab-content'); const initialLoadingEl = document.getElementById('initial-loading'); const appContainerEl = document.querySelector('.app-container');
 
         // --- 1. Full Data Parsing (Runs Immediately) ---
         function parseFullData() {
             console.time("FullParse");
             const rawHTML = rawDataEl.innerHTML;
-            if (!rawHTML || rawHTML.trim().length < 100) {
-                initialLoadingEl.innerHTML = `<h1 style="color: red;">त्रुटी</h1><p>'#raw-gita-data' मध्ये डेटा नाही.</p>`;
-                console.error("No data found."); return false;
-            }
+            if (!rawHTML || rawHTML.trim().length < 100) { initialLoadingEl.innerHTML = `<h1 style="color: red;">त्रुटी</h1><p>'#raw-gita-data' मध्ये डेटा नाही.</p>`; console.error("No data found."); return false; }
             
             const parser = new DOMParser(); const doc = parser.parseFromString(rawHTML, 'text/html'); const elements = Array.from(doc.body.children);
-            let allShlokas = [], allPaads = [], wordMap = new Map(), speakerShlokas = new Map(), chapterBoxesHTMLMap = new Map(); // Use Map for chapter HTML
+            let allShlokas = [], allPaads = [], wordMap = new Map(), speakerShlokas = new Map(), chapterBoxesHTMLMap = new Map();
             let currentChapter = 0, currentShloka = 0, currentSpeaker = null, currentChapterBoxHTML = '', currentChapterTitle = '';
 
             elements.forEach(el => {
-                const className = el.className; const text = el.textContent.trim(); const originalHTML = el.outerHTML; const elementInnerHTML = el.innerHTML; // Get innerHTML for content
+                const className = el.className; const text = el.textContent.trim(); const originalHTML = el.outerHTML; const elementInnerHTML = el.innerHTML;
 
                 if (className === 'p2') { 
                     if (currentChapter > 0 && currentChapterBoxHTML) chapterBoxesHTMLMap.set(currentChapter, currentChapterBoxHTML + '</div>');
-                    currentChapter++; currentShloka = 0; currentChapterTitle = text.replace('अथ ', '').replace('ऽध्यायः', ' अध्याय');
-                    tocContainer.innerHTML += `<li><a href="#chapter-${currentChapter}" class="chapter-list-item" data-chap-num="${currentChapter}">${currentChapter}. ${currentChapterTitle}</a></li>`;
-                    currentChapterBoxHTML = `<div class="chapter-box hidden" id="chapter-${currentChapter}">${originalHTML}`; // Start hidden
+                    currentChapter++; currentShloka = 0; currentChapterTitle = text.replace('अथ ', '').replace('ऽध्यायः', ''); // Get name only
+                     // Remove chapter number from title for display in grid
+                    const displayTitle = currentChapterTitle.replace(/[\u0966-\u096F\s]+$/, '').trim(); // Remove trailing numbers/space
+                    tocContainer.innerHTML += `<li><a href="#chapter-${currentChapter}" class="chapter-list-item" data-chap-num="${currentChapter}">${displayTitle}</a></li>`;
+                    currentChapterBoxHTML = `<div class="chapter-box hidden" id="chapter-${currentChapter}">${originalHTML}`; 
                 } else if (className === 'p4') { 
                     currentSpeaker = text; if (!speakerShlokas.has(currentSpeaker)) speakerShlokas.set(currentSpeaker, []);
                     if (currentChapter > 0) currentChapterBoxHTML += originalHTML;
@@ -2592,33 +2573,25 @@
                     const location = `${currentChapter}.${currentShloka}`; let cleanText = text.replace(/<[^>]+>/g, '').replace(/।।(\d+)।?।?$/, '').trim();
 
                     if (!isContinuation) {
-                        // Store innerHTML for reconstruction
                         allShlokas.push({ text: cleanText, originalHTML: elementInnerHTML, location: location }); 
                         cleanText.split('।').filter(p => p.trim()).forEach(paad => allPaads.push({ text: paad.trim(), location: location }));
                         addWordsToMap(cleanText, location, wordMap);
                         if (currentSpeaker) { const firstWords = cleanText.split(' ').slice(0, 3).join(' ') + '...'; speakerShlokas.get(currentSpeaker).push({ location: location, text: firstWords }); }
-                        // Add shloka to chapter box HTML
                         currentChapterBoxHTML += `<p class="p6" id="c${currentChapter}s${currentShloka}" data-number="${location}" data-loc="${location}">${elementInnerHTML}</p>`;
                     } else {
                         const prev = allShlokas[allShlokas.length - 1];
                         if (prev && prev.location === location) {
-                            prev.text += ' ' + cleanText; prev.originalHTML += `<br>${elementInnerHTML}`; // Append innerHTML
+                            prev.text += ' ' + cleanText; prev.originalHTML += `<br>${elementInnerHTML}`; 
                             cleanText.split('।').filter(p => p.trim()).forEach(paad => allPaads.push({ text: paad.trim(), location: location }));
                             addWordsToMap(cleanText, location, wordMap);
-                            // Append HTML to the last *p6* tag in chapterBoxHTML requires complex DOM manipulation or regex, 
-                            // simpler: just append the content if the structure is consistent
-                            currentChapterBoxHTML = currentChapterBoxHTML.replace(/<\/p>$/, `<br>${elementInnerHTML}</p>`); // Try appending inside last p
-                        } else { currentChapterBoxHTML += originalHTML; } // Fallback
+                            currentChapterBoxHTML = currentChapterBoxHTML.replace(/<\/p>$/, `<br>${elementInnerHTML}</p>`); 
+                        } else { currentChapterBoxHTML += originalHTML; }
                     }
                 } else if (className && currentChapter > 0) { currentChapterBoxHTML += originalHTML; }
             });
             if (currentChapter > 0 && currentChapterBoxHTML) chapterBoxesHTMLMap.set(currentChapter, currentChapterBoxHTML + '</div>');
             
-            // --- Populate Chapter Wrapper ---
-            let finalChapterHTML = '';
-            chapterBoxesHTMLMap.forEach(html => finalChapterHTML += html);
-            chapterWrapper.innerHTML = finalChapterHTML; 
-            
+            let finalChapterHTML = ''; chapterBoxesHTMLMap.forEach(html => finalChapterHTML += html); chapterWrapper.innerHTML = finalChapterHTML; 
             fullDataCache = { allShlokas, allPaads, wordIndex: wordMap, speakerShlokas };
             console.timeEnd("FullParse"); 
             return true; 
@@ -2690,12 +2663,12 @@
         function activateChapter(chapterId) {
              console.log(`Activating chapter: ${chapterId}`);
              document.querySelectorAll('#chapter-content-wrapper .chapter-box').forEach(box => { 
-                 box.classList.toggle('active', box.id === chapterId); // Use active class now
-                 box.classList.toggle('hidden', box.id !== chapterId); // Ensure others are hidden
+                 box.classList.toggle('active', box.id === chapterId); // Use active class
+                 box.classList.toggle('hidden', box.id !== chapterId); // Hide others
              }); 
              const targetBox = document.getElementById(chapterId);
-             if (targetBox) targetBox.classList.remove('hidden'); // Double ensure visibility
-             else console.error(`Chapter box ${chapterId} not found in DOM!`);
+             if (targetBox) targetBox.classList.remove('hidden'); 
+             else console.error(`Chapter box ${chapterId} not found!`);
              contentContainer.scrollTop = 0; 
         }
         
@@ -2706,54 +2679,48 @@
 
         // --- 6. Navigate to Shloka (within Full Chapter) ---
         function MapsToShloka(location, wordToHighlight = null) {
-            if (!isDataParsed) { console.warn("Data not parsed yet."); return; }
-            
             const [chap, shlokaNum] = location.split('.'); if (!chap || !shlokaNum) return; 
             const chapterId = `chapter-${chap}`; const shlokaId = `c${chap}s${shlokaNum}`; 
             
             activateSection('gita-path'); // Activate full chapter view
             activateChapter(chapterId); // Activate the specific chapter box
             
-            const shlokaElement = document.getElementById(shlokaId); 
-            const shlokaObj = fullDataCache.allShlokas.find(s => s.location === location);
+            // Use a slight delay to ensure the chapter is visible before scrolling/highlighting
+            setTimeout(() => {
+                const shlokaElement = document.getElementById(shlokaId); 
+                const shlokaObj = fullDataCache.allShlokas.find(s => s.location === location);
 
-            if (shlokaElement && shlokaObj) { 
-                // Reset innerHTML to original stored HTML
-                shlokaElement.innerHTML = shlokaObj.originalHTML; 
+                if (shlokaElement && shlokaObj) { 
+                    // Reset innerHTML to original stored HTML
+                    shlokaElement.innerHTML = shlokaObj.originalHTML; 
 
-                if (wordToHighlight) { 
-                    try { 
-                        const safeWord = wordToHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
-                        const regex = new RegExp(`(?![^<]*>|[^<>]*<\\/)${safeWord}`, 'gi'); 
-                        shlokaElement.innerHTML = shlokaElement.innerHTML.replace(regex, '<mark>$&</mark>'); 
-                    } catch (e) { console.error("Highlight regex failed:", e); } 
+                    if (wordToHighlight) { 
+                        try { 
+                            const safeWord = wordToHighlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
+                            const regex = new RegExp(`(?![^<]*>|[^<>]*<\\/)${safeWord}`, 'gi'); 
+                            shlokaElement.innerHTML = shlokaElement.innerHTML.replace(regex, '<mark>$&</mark>'); 
+                        } catch (e) { console.error("Highlight regex failed:", e); } 
+                    }
+                    
+                    // Scroll & Highlight Shloka - Use requestAnimationFrame for smoother experience
+                    requestAnimationFrame(() => {
+                        shlokaElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                        document.querySelectorAll('.shloka-highlight').forEach(el => el.classList.remove('shloka-highlight'));
+                        shlokaElement.classList.add('shloka-highlight'); 
+                        shlokaElement.addEventListener('animationend', () => shlokaElement.classList.remove('shloka-highlight'), { once: true });
+                    });
+
+                } else {
+                     console.warn(`Shloka element ${shlokaId} or its data not found.`);
+                     const el = document.getElementById(shlokaId); // Try finding element again
+                     if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
                 }
-                
-                // Scroll & Highlight Shloka - Use requestAnimationFrame
-                requestAnimationFrame(() => {
-                    // Force scroll into view immediately
-                    shlokaElement.scrollIntoView({ behavior: 'auto', block: 'center' }); 
-                    
-                    // Clear previous highlights and add new one
-                    document.querySelectorAll('.shloka-highlight').forEach(el => el.classList.remove('shloka-highlight'));
-                    shlokaElement.classList.add('shloka-highlight'); 
-                    
-                    // Remove highlight after animation (use CSS animation for timing)
-                    shlokaElement.addEventListener('animationend', () => {
-                        shlokaElement.classList.remove('shloka-highlight');
-                    }, { once: true });
-                });
-
-            } else {
-                 console.warn(`Shloka element ${shlokaId} or its data not found.`);
-                 const el = document.getElementById(shlokaId); // Try finding element again
-                 if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: 'auto', block: 'center' }));
-            }
+            }, 50); // 50ms delay for DOM updates
         }
         
         // --- 7. Global Search ---
         function performGlobalSearch() { /* ... (Same as before) ... */
-             if (!isDataParsed) { searchResultsEl.innerHTML = '<p>डेटा लोड होत आहे...</p>'; return; } const query = searchBar.value.trim(), safeQuery = query.toLowerCase(); if (safeQuery.length < 2) { searchResultsEl.innerHTML = ''; return; } const results = fullDataCache.allShlokas.filter(s => s.text.toLowerCase().includes(safeQuery)); let html = `<h3>'${query}' साठी ${results.length} परिणाम:</h3>`; if (results.length === 0) html += `<p>काहीही सापडले नाही.</p>`; else { results.forEach(item => { const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'); const highlighted = item.text.replace(regex, '<mark>$1</mark>'); html += `<div class="search-result-item"><a class="location-link" data-loc="${item.location}" data-word="${query}">अध्याय ${item.location}</a><p>${highlighted}</p></div>`; }); } searchResultsEl.innerHTML = html;
+             const query = searchBar.value.trim(), safeQuery = query.toLowerCase(); if (safeQuery.length < 2) { searchResultsEl.innerHTML = ''; return; } const results = fullDataCache.allShlokas.filter(s => s.text.toLowerCase().includes(safeQuery)); let html = `<h3>'${query}' साठी ${results.length} परिणाम:</h3>`; if (results.length === 0) html += `<p>काहीही सापडले नाही.</p>`; else { results.forEach(item => { const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'); const highlighted = item.text.replace(regex, '<mark>$1</mark>'); html += `<div class="search-result-item"><a class="location-link" data-loc="${item.location}" data-word="${query}">अध्याय ${item.location}</a><p>${highlighted}</p></div>`; }); } searchResultsEl.innerHTML = html;
         }
 
         // --- 8. Initialize App ---
@@ -2764,7 +2731,7 @@
                 setupClickHandlers();
                 setupSuchiControls();
                 initialLoadingEl.classList.add('hidden'); 
-                appContainerEl.classList.remove('hidden'); // Show app container
+                appContainerEl.classList.remove('hidden'); 
                 appContainerEl.classList.add('loaded'); 
                 activateSection('chapter-grid'); // Start at chapter grid
             }
@@ -2772,7 +2739,7 @@
             console.error("App initialization failed:", error);
             initialLoadingEl.innerHTML = `<h1>त्रुटी</h1><p>ॲप सुरू करताना समस्या आली.</p><pre>${error.message}</pre>`;
         }
-        console.timeEnd("AppInit"); // End timing initialization
+        console.timeEnd("AppInit"); 
     } // End of initializeGitaApp
 
     // Run the app initialization
