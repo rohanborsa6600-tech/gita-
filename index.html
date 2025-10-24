@@ -391,7 +391,6 @@
             color: rgba(56, 189, 248, 0.8);
             margin-right: 1rem;
         }
-        /* UPDATED: Increased font size */
         .suchi-item-button .shloka-text-shloka { 
             font-family: 'Mukta', serif; 
             color: rgba(255,255,255,0.9);
@@ -415,7 +414,6 @@
             font-size: 1rem; /* Reset font size for preview */
         }
         
-        /* UPDATED: Added styles for aggregated word list */
         .suchi-item-aggregated {
             padding: 0.75rem 0.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -636,7 +634,6 @@
            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
         }
 
-        /* UPDATED: Increased font size */
         .gita-content .p5 .s5 { 
             display: block; 
             color: #9ca3af; 
@@ -646,7 +643,6 @@
             margin-top: 0.5rem; 
         }
         
-        /* UPDATED: Increased font size */
         .gita-content .p6 .s6 { 
             display: block; 
             color: #6b7280; 
@@ -1216,7 +1212,7 @@
         const fontIncrease = document.getElementById('font-increase');
         const backButton = document.getElementById('back-button');
 
-        // --- Data Parsing (UPDATED for Shabd Suchi Aggregation) ---
+        // --- Data Parsing ---
         function parseData() {
             try {
                 const parser = new DOMParser();
@@ -1230,7 +1226,6 @@
                 let p4Buffer = []; 
                 let currentChapterEndLine = null;
                 
-                // UPDATED: Map for aggregating shabdas
                 const shabdaMap = new Map();
 
                 const saveCurrentShlokaBlock = () => {
@@ -1310,7 +1305,6 @@
                     } else if (className === 'p6' && currentShlokaBlock) { 
                         currentShlokaBlock.p6.push(outerHTML);
                         
-                        // UPDATED: Populate shabdaMap
                         const words = textContent.split(/[,\s.]+/);
                         for (const word of words) {
                             const trimmedWord = word.trim();
@@ -1351,13 +1345,12 @@
                     });
                 }
 
-                // UPDATED: Convert shabdaMap to sorted array
                 indices.shabdas = Array.from(shabdaMap.entries())
                     .map(([word, idSet]) => ({
                         text: word,
                         ids: Array.from(idSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
                     }))
-                    .sort((a, b) => a.text.localeCompare(b.text, 'mr')); // Sort by Marathi alphabet
+                    .sort((a, b) => a.text.localeCompare(b.text, 'mr')); 
 
             } catch (error) {
                 console.error("Data parsing failed:", error);
@@ -1404,7 +1397,7 @@
             container.innerHTML = html;
         }
 
-        // UPDATED: To handle new shabda list and hide filter for vakta list
+        // *** UPDATED FUNCTION ***
         function renderGitaSuchi() {
             const tabsContainer = document.getElementById('suchi-tabs-container');
             const letterFilterContainer = document.getElementById('letter-filter-container');
@@ -1417,6 +1410,7 @@
                 { name: 'वक्ता सूची', data: indices.vaktas },
             ];
             
+            // --- FIXED: Typo corrected from currentSuchIab to currentSuchiTab ---
             const isVaktaTab = currentSuchiTab === 3;
             const isShabdTab = currentSuchiTab === 2;
 
@@ -1443,14 +1437,14 @@
 
             // Render List
             const currentData = tabs[currentSuchiTab].data;
-            // UPDATED: Don't filter Vakta tab
+            // Don't filter Vakta tab
             const filteredData = (currentLetterFilter && !isVaktaTab)
                 ? currentData.filter(item => (item.text || item.preview || '').replace(/<[^>]+>/g, '').trim().startsWith(currentLetterFilter))
                 : currentData;
 
             let listHTML = '';
             if (isShabdTab) {
-                // --- NEW: Render Aggregated Shabd Suchi ---
+                // --- Render Aggregated Shabd Suchi ---
                 listHTML = '<ul class="suchi-list">';
                 listHTML += filteredData.map((item, index) => `
                     <li class="suchi-item-aggregated animate-slide-in-up" style="animation-delay: ${Math.min(index * 10, 500)}ms">
@@ -1747,7 +1741,6 @@
                 }
                 
                 // Suchi/Search Item
-                // UPDATED: Added .shabd-id-button
                 const itemButton = event.target.closest('.suchi-item-button, .search-result-item, .shabd-id-button');
                 if (itemButton) {
                     currentChapterNum = Number(itemButton.dataset.shlokaId.split('.')[0]);
