@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="mr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>भगवद्गीता | Liquid Glass UI</title>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- Google Font (Mukta) Import --- */
+        @import url('https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap');
+        
+        :root {
+            --font-size-base: 16px;
+        }
+
+        html {
+            font-size: var(--font-size-base);
+        }
+
+        body {
+            font-family: 'Mukta', sans-serif;
+            /* --- Animated Gradient Background --- */
+            background: linear-gradient(-45deg, #1e0033, #3b004a, #004d40, #002c3e);
+            background-size: 400% 400%;
+            animation: gradient-bg 25s ease infinite;
+            color: #e0e7ff; /* Default light text */
+            margin: 0;
+            padding-top: 64px; /* Navbar height */
+        }
+        
+        html.dark body {
+            background: linear-gradient(-45deg, #020024, #050510, #001f24, #040d11);
+            background-size: 400% 400%;
+            animation: gradient-bg 25s ease infinite;
+            color: #dbeafe;
+        }
+
+        @keyframes gradient-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- "Flower Light Reflection" --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 20%;
+            left: 10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.05) 0%, rgba(0, 255, 255, 0) 60%);
+            border-radius: 50%;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: 10%;
+            right: 5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 0, 255, 0.05) 0%, rgba(255, 0, 255, 0) 60%);
+            border-radius: 50%;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- Keyframe Animations --- */
+        @keyframes fade-in-bloom {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in-bloom {
+            animation: fade-in-bloom 0.5s ease-out;
+        }
+        
+        @keyframes slide-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in-up {
+            animation: slide-in-up 0.4s ease-out;
+        }
+
+        /* --- Glass Panel Class --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        
+        html.dark .glass-panel {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), 0 0 10px rgba(56, 189, 248, 0.1);
+        }
+        
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 255, 0.5);
+        }
+
+        /* --- Button Resets --- */
+        button {
+            font-family: 'Mukta', sans-serif;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            color: inherit;
+        }
+        
+        /* --- Layout --- */
+        main {
+            padding: 1rem;
+            max-width: 48rem; /* max-w-5xl */
+            margin: 0 auto;
+            padding-top: 1.5rem; /* pt-20 from react, but navbar is 4rem (h-16) + 1.5rem = 5.5rem total */
+        }
+
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+        }
+
+        /* --- Navbar --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            height: 4rem; /* h-16 */
+            border-bottom-width: 1px;
+            border-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0; /* No rounding for navbar */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0, 255, 255, 0.1);
+        }
+        .navbar-content {
+            max-width: 48rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem; /* gap-6 */
+        }
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem; /* gap-4 */
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700;
+            color: #22d3ee; /* text-cyan-400 */
+            transition: all 0.3s ease;
+        }
+        .nav-logo:hover { color: #67e8f9; }
+        .nav-logo span:first-child { 
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 5px rgba(0,255,255,0.7)); 
+        }
+        .nav-logo .logo-text { display: none; }
+        @media (min-width: 640px) { .nav-logo .logo-text { display: inline; } }
+
+        .nav-link {
+            font-size: 1rem; /* text-base */
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover { color: white; }
+        @media (max-width: 640px) { .nav-link { font-size: 0.875rem; } }
+
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            border-radius: 0.5rem;
+            padding: 0.125rem;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        html.dark .font-controls { background: rgba(255, 255, 255, 0.05); }
+        .font-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
+        }
+        .font-btn:hover { color: white; background: rgba(255, 255, 255, 0.1); }
+        .font-controls i { color: rgba(255, 255, 255, 0.5); margin: 0 0.25rem; }
+
+        .theme-toggle {
+            padding: 0.5rem;
+            border-radius: 9999px;
+            transition: background-color 0.3s ease;
+        }
+        .theme-toggle:hover { background: rgba(255, 255, 255, 0.1); }
+        .theme-toggle .icon-sun { color: #facc15; }
+        .theme-toggle .icon-moon { color: rgba(255, 255, 255, 0.8); }
+
+        /* --- Loading Screen --- */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            background: #040d11;
+        }
+        #loading-screen h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Mukta', sans-serif;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .loader {
+            width: 3rem;
+            height: 3rem;
+            color: #22d3ee;
+            animation: spin 1s linear infinite;
+        }
+
+        /* --- Section Header --- */
+        .section-header {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
+            font-family: 'Mukta', serif;
+        }
+
+        /* --- Chapter Grid --- */
+        #chapter-grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+        @media (min-width: 640px) { #chapter-grid-container { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { #chapter-grid-container { grid-template-columns: repeat(3, 1fr); } }
+        
+        .chapter-grid-button {
+            padding: 1.25rem;
+            text-align: left;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+        .chapter-grid-button:hover {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            border-color: rgba(56, 189, 248, 0.5);
+            transform: scale(1.03);
+        }
+        .chapter-grid-button span {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #22d3ee;
+        }
+        .chapter-grid-button h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Mukta', sans-serif;
+            margin-bottom: 0;
+        }
+        
+        /* --- Gita Suchi --- */
+        .suchi-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            border-radius: 0.5rem 0.5rem 0 0;
+            padding: 0.25rem;
+        }
+        .suchi-tab-button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            border-radius: 0.375rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .suchi-tab-button:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .suchi-tab-button.active {
+            background: rgba(56, 189, 248, 0.3);
+            color: #67e8f9;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 640px) { .suchi-tab-button { font-size: 0.875rem; padding: 0.5rem 0.75rem; } }
+
+        .letter-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            justify-content: center;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+        }
+        .letter-filter-button {
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            width: 2rem;
+            height: 2rem;
+        }
+        .letter-filter-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .letter-filter-button.all-btn { width: auto; padding: 0 0.75rem; }
+        .letter-filter-button.active {
+            background: #22d3ee;
+            color: white;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+        @media (max-width: 640px) { 
+            .letter-filter-button { width: 1.75rem; height: 1.75rem; font-size: 0.75rem;} 
+        }
+
+
+        .suchi-list-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .suchi-list { list-style: none; padding: 0; margin: 0; }
+        .suchi-list li { animation: slide-in-up 0.3s ease-out; }
+        .suchi-item-button {
+            text-align: left;
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+        .suchi-item-button:hover { background: rgba(255, 255, 255, 0.1); }
+        .suchi-item-button .shloka-id {
+            font-family: monospace;
+            font-size: 0.875rem;
+            color: rgba(56, 189, 248, 0.8);
+            margin-right: 1rem;
+        }
+        /* UPDATED: Increased font size */
+        .suchi-item-button .shloka-text-shloka { 
+            font-family: 'Mukta', serif; 
+            color: rgba(255,255,255,0.9);
+            font-size: 1.15rem; 
+        }
+        .suchi-item-button .shloka-text-other { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
+
+        .vakta-group { margin-bottom: 1.5rem; }
+        .vakta-group-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f472b6;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.25rem;
+            font-family: 'Mukta', serif;
+        }
+        .vakta-group .suchi-item-button .shloka-text-shloka { 
+            font-family: 'Mukta', sans-serif; /* Override serif for preview */
+            font-size: 1rem; /* Reset font size for preview */
+        }
+        
+        /* UPDATED: Added styles for aggregated word list */
+        .suchi-item-aggregated {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .shabd-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .shabd-id-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .shabd-id-button {
+            font-family: monospace;
+            font-size: 0.9rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: #67e8f9;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        .shabd-id-button:hover {
+            background: rgba(56, 189, 248, 0.3);
+            color: #a5f3fc;
+        }
+
+        
+        /* --- Search Component --- */
+        .search-input-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        #search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem; /* pl-10 pr-4 py-3 */
+            border-radius: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box; /* Ensure padding doesn't affect width */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #search-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        #search-input:focus {
+            outline: none;
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+        }
+        .search-input-container i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            height: 1.25rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .search-scopes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .scope-button {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .scope-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .scope-button.active {
+            background: #22d3ee;
+            color: white;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+        .scope-button i { width: 0.875rem; height: 0.875rem; }
+
+        #search-results-info {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 1rem;
+        }
+        #search-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .search-result-item {
+            text-align: left;
+            width: 100%;
+            padding: 1rem;
+        }
+        .search-result-item:hover {
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        .search-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+        .search-result-header .shloka-id {
+            font-family: monospace;
+            font-size: 0.875rem;
+            color: #22d3ee;
+        }
+        .search-result-header .shloka-type {
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            color: #67e8f9;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+        }
+        .search-result-text.shloka-text-shloka { font-family: 'Mukta', serif; color: rgba(255,255,255,0.9); }
+        .search-result-text.shloka-text-other { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
+        .search-result-text mark {
+            background: #facc15;
+            color: black;
+            padding: 0 0.125rem;
+            border-radius: 0.125rem;
+        }
+
+        /* --- Gita Path --- */
+        .path-controls {
+            position: sticky;
+            top: 5rem; /* 4rem navbar + 1rem spacing */
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .path-control-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+        #back-button {
+            color: #67e8f9;
+            background: rgba(56, 189, 248, 0.1);
+        }
+        #back-button:hover { 
+            color: #a5f3fc;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); 
+        }
+        #toggle-all-button {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        #toggle-all-button:hover { 
+            color: white; 
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        .path-control-btn i { width: 1rem; height: 1rem; }
+        
+        .gita-content .p1 .s1 { display: block; margin-top: 0.75rem; color: #d1d5db; line-height: 1.7; font-size: 0.95em; }
+        html.dark .gita-content .p1 .s1 { color: #d1d5db; }
+        
+        .gita-content .p2 .s2 { display: block; font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 20px rgba(56, 189, 248, 0.5); font-family: 'Mukta', serif; }
+        
+        .gita-content .p3 .s3 { display: block; font-size: 1.75rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.5rem; color: #f472b6; text-shadow: 0 0 8px rgba(244, 114, 182, 0.5); }
+        
+        .gita-content .p11 {
+            display: block; 
+            text-align: center; 
+            font-weight: 700; 
+            font-size: 1.25rem; 
+            color: #f472b6; /* pink-400, like Vakta */
+            text-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
+            margin-top: 2.5rem; 
+            margin-bottom: 1.5rem;
+        }
+
+        .gita-content .shloka-block { 
+            cursor: pointer; 
+            user-select: none; 
+            -webkit-user-select: none; 
+            margin: 0.5rem 0;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        .gita-content .shloka-block:hover {
+            box-shadow: 0 0 20px rgba(244, 114, 182, 0.4);
+            border-color: rgba(244, 114, 182, 0.5);
+        }
+
+        .gita-content .shloka-block-p4 { /* Tappable container for p4 */
+            padding: 0.5rem 0;
+        }
+        .gita-content .p4 .s4 .shloka-center { 
+           font-size: 1.6rem; 
+           font-family: 'Mukta', serif; 
+           color: #fff; 
+           line-height: 1.8;
+           text-align: center;
+           text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+
+        /* UPDATED: Increased font size */
+        .gita-content .p5 .s5 { 
+            display: block; 
+            color: #9ca3af; 
+            text-align: center; 
+            font-style: italic; 
+            font-size: 1.2rem; /* Was 1.1rem */
+            margin-top: 0.5rem; 
+        }
+        
+        /* UPDATED: Increased font size */
+        .gita-content .p6 .s6 { 
+            display: block; 
+            color: #6b7280; 
+            font-size: 1.15rem; /* Was 1rem */
+            margin-top: 0.5rem; 
+            line-height: 1.7; 
+        }
+
+        .shloka-details {
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            margin-top: 0.75rem;
+            border-left: 3px solid #22d3ee;
+            padding-left: 1rem;
+            background: rgba(0, 255, 255, 0.03);
+            border-radius: 0 8px 8px 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+        }
+        .shloka-details.visible {
+            max-height: 1000px; /* arbitrary high value */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            opacity: 1;
+        }
+        
+        @keyframes highlight-fade-glow {
+            0% { background-color: rgba(56, 189, 248, 0.3); box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
+            100% { background-color: transparent; box-shadow: none; }
+        }
+        .highlight-shloka {
+            animation: highlight-fade-glow 2s ease-out;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2.5rem;
+        }
+        footer p {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+        footer span {
+            filter: drop-shadow(0 0 5px rgba(0,255,255,0.7));
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <i data-lucide="loader-2" class="loader"></i>
+        <h2>गीता ॲप लोड होत आहे...</h2>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar glass-panel">
+        <div class="navbar-content">
+            <div class="navbar-left">
+                <button id="nav-logo" class="nav-logo">
+                    <span>💎</span>
+                    <span class="logo-text" style="font-family: 'Mukta', serif;">गीता</span>
+                </button>
+                <button id="nav-suchi" class="nav-link">
+                    <i data-lucide="list" style="width:1rem; height:1rem;"></i>
+                    गीता सूची
+                </button>
+                <button id="nav-search" class="nav-link">
+                    <i data-lucide="search" style="width:1rem; height:1rem;"></i>
+                    शोध
+                </button>
+            </div>
+            <div class="navbar-right">
+                <div class="font-controls">
+                    <button id="font-decrease" class="font-btn">A-</button>
+                    <i data-lucide="type" style="width:1rem; height:1rem;"></i>
+                    <button id="font-increase" class="font-btn">A+</button>
+                </div>
+                <button id="theme-toggle" class="theme-toggle">
+                    <i data-lucide="moon" class="icon-moon"></i>
+                    <i data-lucide="sun" class="icon-sun" style="display: none;"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+        <!-- Chapter Grid View -->
+        <div id="view-grid" class="view animate-fade-in-bloom">
+            <h2 class="section-header">अध्याय सूची</h2>
+            <div id="chapter-grid-container">
+                <!-- Content will be injected by JS -->
+            </div>
+        </div>
+
+        <!-- Gita Suchi View -->
+        <div id="view-suchi" class="view animate-fade-in-bloom">
+            <h2 class="section-header">गीता सूची</h2>
+            <div id="suchi-tabs-container" class="suchi-tabs glass-panel">
+                <!-- Tabs will be injected by JS -->
+            </div>
+            <div id="letter-filter-container" class="letter-filter glass-panel">
+                <!-- Letter filter will be injected by JS -->
+            </div>
+            <div id="suchi-list-container" class="suchi-list-container glass-panel">
+                <!-- List will be injected by JS -->
+            </div>
+        </div>
+
+        <!-- Search View -->
+        <div id="view-search" class="view animate-fade-in-bloom">
+            <h2 class="section-header">शोध</h2>
+            <div class="search-input-container">
+                <input type="text" id="search-input" placeholder="शोधा (उदा. 'अर्जुन' किंवा '1.2')" class="glass-panel">
+                <i data-lucide="search"></i>
+            </div>
+            <div id="search-scopes-container" class="search-scopes">
+                <!-- Scope buttons will be injected by JS -->
+            </div>
+            <div id="search-results-info"></div>
+            <ul id="search-results-list">
+                <!-- Results will be injected by JS -->
+            </ul>
+        </div>
+
+        <!-- Gita Path (Chapter) View -->
+        <div id="view-path" class="view animate-fade-in-bloom">
+            <div class="path-controls">
+                <button id="back-button" class="path-control-btn glass-panel">
+                    <i data-lucide="arrow-left"></i>
+                    परत जा
+                </button>
+                <button id="toggle-all-button" class="path-control-btn glass-panel">
+                    <i data-lucide="eye" id="toggle-all-icon"></i>
+                    <span id="toggle-all-text">सर्व दाखवा</span>
+                </button>
+            </div>
+            <div id="gita-path-content" class="gita-content">
+                <!-- Chapter content will be injected by JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            Made with <span>💎</span> by ADX
+        </p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script type="module">
+        // --- Mock Data ---
+        const MOCK_GITA_HTML = `
+<p class="p1"><span class="s1">।। श्रीपरेशाय नमः ।।</span></p>
+<p class="p2"><span class="s2">अथ प्रथमोऽध्यायः</span></p>
+<p class="p3"><span class="s3">धृतराष्ट्र उवाच</span></p>
+<p class="p4"><span class="s4">धर्मक्षेत्रे कुरुक्षेत्रे, समवेता युयुत्सवः ।</span></p>
+<p class="p4"><span class="s4">मामकाः पाण्डवाश्चैव, किमकुर्वत सञ्जय ।।०१/०१।।</span></p>
+<p class="p5"><span class="s5">धर्मक्षेत्रे कुरुक्षेत्रे, समवेता युयुत्सवः</span></p>
+<p class="p5"><span class="s5">मामकाः पाण्डवा च एव, किम् अकुर्वत सञ्जय ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">संजय, धर्मक्षेत्रे, कुरुक्षेत्र, युयुत्सवः समवेता, मामकाः, च, पाण्डवा, एव, किम्, अकुर्वत.</span></p>
+<p class="p1"><span class="s1">(धृतराष्ट्र उवाच) धृतराष्ट्राने विचारले, (सञ्जय) हे संजया, (धर्मक्षेत्रे) धर्मरुप क्रिया, पुण्यरुप क्रिया, आचरण्याचे स्थान, (कुरुक्षेत्रे) अशा कुरुक्षेत्रात, (युयुत्सवः समवेताः) युद्धाच्या इच्छेने एकत्र झालेले, (मामकाः) माझे पुत्र कौरख, (च) आणि, (पाण्डवाः) पण्डूचे पुत्र, (एव) दोघांनी देखील, (किम्) काय, (अकुर्वत) केले. ।।१।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p3"><span class="s3">सञ्जय उवाच</span></p>
+<p class="p4"><span class="s4">दृष्ट्वा तु पाण्डवानीकं, व्यूढं दुर्योधनस्तदा ।</span></p>
+<p class="p4"><span class="s4">आचार्यमुपसङ्गम्य, राजा वचनमब्रवीत् ।।०१/०२।।</span></p>
+<p class="p5"><span class="s5">दृष्ट्वा तु पाण्डवानीकम्, व्यूढम् दुर्योधन तदा ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">आचार्यम् उपसङ्गम्य, राजा वचनमब्रवीत् ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">तदा, राजा दुर्योधन, व्यूढम्, पाण्डवानीकम्, दृष्ट्वा, तु, आचार्यम् उपसङ्गम्य, इदम्, वचनम्, अब्रवीत्.</span></p>
+<p class="p1"><span class="s1">(तदा) तेव्हा, (राजा दुर्योधन) कौरव पक्षाचा मुख्य राजा दुर्योधन,</span></p>
+<p class="p1"><span class="s1">(व्यूढम्) विशिष्ट पद्धतीने रचलेल्या, (पाण्डवानीकम्) पाण्डवांच्या सैन्याला, (दृष्टवा) पाहून, (तु) आणि, (आचार्यम् उपसंगम्य) द्रोणाचार्यांजवळ जाऊन, (इदम्) है, (वचनम्) वाक्य, (अब्रवीत) बोलला. ।।२।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">पश्यैतां पाण्डुपुत्राणां, आचार्य महतीं चमूम् ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s4">व्यूढां द्रुपदपुत्रेण, तव शिष्येण धीमता ।।०१/०३।।</span></p>
+<p class="p5"><span class="s5">पश्य एताम् पाण्डुपुत्राणाम्, आचार्य महतीं चमूम् ।</span></p>
+<p class="p5"><span class="s5">व्यूढाम् द्रुपदपुत्रेण, तव शिष्येण धीमता ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">आचार्य, तव, धीमता शिष्येण, द्रुपदपुत्रेण, व्यूढाम्, एताम्, पाण्डुपुत्राणाम्, महतीम् चमुम्, पश्य.</span></p>
+<p class="p1"><span class="s1">(आचार्य) अहो द्रोणाचार्या, (तव) तुमच्या, (धीमता शिष्येण) बुद्धिमान अशा शिष्याने, (द्रुपदपुत्रेण) द्रुपदाच्या पुत्राने, (व्यूढाम) विशिष्ट पद्धतीने रचलेली, (एताम्) ही, (पाण्डुपुत्राणाम्) पांडवांची, (महतीम् चमूम्) अवाढव्य अशी सेना, (पश्य) पहा. ।।३।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अत्र शूरा महेष्वासा, भीमार्जुनसमा युधि ।</span></p>
+<p class="p4"><span class="s4">युयुधानो विराटश्च, द्रुपदश्च महारथः ।।०१/०४।।</span></p>
+<p class="p5"><span class="s5">अत्र शूरा महेष्वासाः, भीमार्जुनसमाः युधि ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">युयुधानः विराटः च, द्रुपदः च महारथः ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">अत्र, युधि, भीमार्जुनसमाः, शूराः, महेष्वासाः, च, युयुधानः, विराटः, च, महारथः द्रुपदः.</span></p>
+<p class="p1"><span class="s1">(अत्र) येथे या सैन्यात, (युधि) ह्या युद्धात, (भिमार्जुनसमाः) भीम अर्जुनासारखे, (शूराः) पुरुषार्थी, (महेष्वासाः) मोठमोठाले धनुष्य धारण करणारे वीर आहेत, (च) आणि त्याप्रमाणे, (युयुधानः) युयुधान नावाचा राजा, (विराटः) विराट नावाचा, (च) आणि, (महारथः द्रुपदः) महारथी दृपदराजा देखील आहे.</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">धृष्टकेतुश्चेकितानः, काशिराजश्च वीर्यवान् ।</span></p>
+<p class="p4"><span class="s4">पुरुजित्कुन्तिभोजश्च, शैब्यश्च नरपुङ्गवः ।।०१/०५।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">धृष्टकेतुः चेकितानः, काशिराजः च वीर्यवान् ।</span></p>
+<p class="p5"><span class="s5">पुरुजित् कुन्तिभोजः च, शैब्यः च नरपुङ्गवः ।।</span></p>
+<p class="p6"><span class="s6">च, धृष्टकेतुः, चेकितानः, च वीर्यवान काशिराजः, च, पुरूजित्, कुन्तिभोजः, च, नरपुङ्गवः शैब्यः.</span></p>
+<p class="p1"><span class="s1">(च) आणि, (धृष्टकेतुः) धृष्टकेतु नावाचा राजा, (चेकितानः) चेकितान नावाचा राजा, (च वीर्यवान काशिराजः) आणि शूरवीर असा काशिराजा, (च) आणि, (पुरूजित्) या नावाचा राजा, (कुन्तिभोजः) कुन्तिभोज नावाचा राजा, (च) आणि, (नरपुङ्गवः शैब्यः) पुरुषांमध्ये श्रेष्ठ असा शैब्य राजा या युध्दात आहे. ।।५।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">युधामन्युश्च विक्रान्त, उत्तमौजाश्च वीर्यवान् ।</span></p>
+<p class="p4"><span class="s4">सौभद्रो द्रौपदेयाश्च, सर्व एव महारथाः ।।०१/०६।।</span></p>
+<p class="p5"><span class="s5">युधामन्युः च विक्रान्त, उत्तमौजाः च वीर्यवान् ।</span></p>
+<p class="p5"><span class="s5">सौभद्रः द्रौपदेयाः च. सर्व एव महारथाः ।।</span></p>
+<p class="p6"><span class="s6">च, विक्रान्तः, युधामन्युः, च, वीर्यवान्, उत्तमौजाः,च, सौभद्रः, च, द्रौपदेयाः, सर्व एव, महारथाः.</span></p>
+<p class="p1"><span class="s1">(च) आणि, (विक्रान्तः) महापराक्रमी असा, (युधामन्युः) युधामन्यु नावाचा राजा, (च) आणि, (वीर्यवान्) बलशाली, शूरवीर असा, (उत्तमौजाः) या नावाचा राजा, (च) आणि, (सौभद्रः) सुभद्रापुत्र अभीमन्यु, (च) आणि, (द्रौपदेयाः) द्रौपदीचे पाचही पुत्र, (सर्व एव) हे सर्वच, (महारथाः) महारथी योध्दे आहेत. ।।६।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अस्माकं तु विशिष्टा ये, तान्निबोध द्विजोत्तम ।</span></p>
+<p class="p4"><span class="s4">नायका मम सैन्यस्य, सञ्ज्ञार्थं तान्ब्रवीमि ते ।।०१/०७।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">अस्माकम् तु विशिष्टा ये, तान् निबोध द्विजोत्तम ।</span></p>
+<p class="p5"><span class="s5">नायका मम सैन्यस्य, सञ्ज्ञार्थम् तान् ब्रवीमि ते ।।</span></p>
+<p class="p6"><span class="s6">द्विजोत्तम, तु, अस्माकम्, ये, विशिष्टाः, तान्, निबोध, मम सैन्यस्य, नायकाः, तान्, संज्ञार्थम्, ते, ब्रवीमि.</span></p>
+<p class="p1"><span class="s1">(द्विजोत्तम) हे ब्राह्मणश्रेष्ठा, (तु) आणि, (अस्माकम) आमच्या पक्षातले, (ये) जे, (विशिष्टाः) महत्वाचे योद्धे, (तान्) त्यांनापण, (निबोध) जाणून घ्या, (मम सैन्यस्य) माझ्या सैन्याचे जे, (नायकाः) जे प्रमुख आहेत, (तान्) त्यांना, (सञ्ज्ञार्थम्) नावानिशी माहितीसाठी, (ते) तुम्हाला, (ब्रवीमि) सांगतो. ।।७।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">भवान्भीष्मश्च कर्णश्च, कृपश्च समितिञ्जयः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s4">अश्वत्थामा विकर्णश्च, सौमदत्तिस्तथैव च ।।०१/०८।।</span></p>
+<p class="p5"><span class="s5">भवान् भीष्मः च कर्णः च, कृपः च समितिञ्जयः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">अश्वत्थामा विकर्णः च, सौमदत्तिः तथा एव च ।।</span></p>
+<p class="p6"><span class="s6">भवान्, भीष्मः, च, कर्णः, च, समितिञ्जयः कृपः, अश्वत्थामा, च, विकर्णः, च, तथा एव, सौमदत्तिः.</span></p>
+<p class="p1"><span class="s1">(भवान्) आपण स्वतः, (भीष्मः) भीष्मपितामह, (च) आणि, (कर्णः) कर्ण, (च) आणि, (समितिञ्जयः कृपः) नेहमीच युद्ध जिंकनारे कृपाचार्य, (अश्वत्थामा) तुमचा मुलगा अश्वत्थामा, (च) आणि, (विकर्णः) आमचा भाऊ विकर्ण, (च) आणि, (तथा एव) त्याप्रमानेच, (सौमदत्तिः) सोमदत्त राजाचा मुलगा भुरीश्रवा. ।।८।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अन्ये च बहवः शूरा, मदर्थे त्यक्तजीविताः ।</span></p>
+<p class="p4"><span class="s4">नानाशस्त्रप्रहरणाः, सर्वे युद्धविशारदाः ।।०१/०९।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">अन्ये च बहवः शूरा, मदर्थे त्यक्तजीविताः ।</span></p>
+<p class="p5"><span class="s5">नानाशस्त्रग्रहरणाः सर्वे युद्धविशारदाः ।।</span></p>
+<p class="p6"><span class="s6">च, अन्ये, बहवः, मदर्थे, त्यक्तजीविताः, शूरा, सर्वे, नानाशस्त्रग्रहरणाः, युद्धविशारदाः.</span></p>
+<p class="p1"><span class="s1">(च) आणि, (अन्ये) आणखीनही, (बहवः) पुष्कळसे, (मदर्थे) माझ्यासाठी, (त्यक्तजीविताः) प्राणदेखील देणारे, (शूरा) जयद्रथ दुःशासनादिक शूरवीर आहेत, (सर्वे) ते सर्व, (बानाशाप्रहरणाः) नाना प्रकारची शत्रे चालवण्यात तरबेज असून, (युध्दविशारदाः) युद्धकलेत निष्णात आहेत, कुशल आहेत. ।।९।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अपर्याप्तं तदस्माकं, बलं भीष्माभिरक्षितम् ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s4">पर्याप्तं त्विद‌मेतेषां, बलं भीमाभिरक्षितम् ।।०१/१०।।</span></p>
+<p class="p5"><span class="s5">अपर्याप्तम् तत् अस्माकम्, बलम् भीष्माभिरक्षितम् ।</span></p>
+<p class="p5"><span class="s5">पर्याप्तम् तु इदम् एतेषाम, बलम् भीमाभिरक्षितम् ।।</span></p>
+<p class="p6"><span class="s6">भीष्माभिरक्षितम्, अस्माकम्, तत्, बलम्, अपर्याप्तम्, तु, भीमाभिरक्षितम्, एतेषाम्, इदम्, बलम्, पर्याप्नम्.</span></p>
+<p class="p1"><span class="s1">(भीष्माभिरक्षितम्) भीष्मांनी रक्षिलेले, (अस्माकम्) आमचे, (तत) ते, (बलम्) सैन्य, (अपर्याप्तम्) अफाट आहे, पराभूत करण्यास अशक्य आहे, (तु)आणि, (भीमाभिरक्षितम्) भीमाने रक्षिलेले, (एतेषाम्) पांडवांचे, (इदम्) हे, (बलम्) सैन्य,(पर्याप्तम्)जिंकण्यास सोपे आहे. ।।१०।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अयनेषु च सर्वेषु, यथाभागमवस्थिताः ।</span></p>
+<p class="p4"><span class="s4">भीष्ममेवाभिरक्षन्तु, भवन्तः सर्व एव हि ।।०१/११।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">अयनेषु च सर्वेषु, यथाभागम् अवस्थिताः ।</span></p>
+<p class="p5"><span class="s5">भीष्मम् एव अभिरक्षन्तु, भवन्तः सर्व एव हि ।।</span></p>
+<p class="p6"><span class="s6">च, सर्वेषु अयनेषु, यथाभागम्, अवस्थिताः, भवन्तः, सर्वे एव, हि, भीष्मम् एव, अभिरक्षन्तु.</span></p>
+<p class="p1"><span class="s1">(च) म्हणून, (सर्वेशु अयनेशु) सर्व मोत्र्यांच्या ठिकाणी, (यथाभागम्) आपापल्या नेमलेल्या जागी, (अवस्थिताः) उभे राहून, तयार राहून, (भवन्तः) आपण, (सर्वे एव) सर्वांनीच मिळून, (हि) निश्चयपूर्वक, (भीष्मम् एव) भीष्म पितामहांचेच, (अभिरक्षन्तु) सर्व तन्हेने रक्षण करावे. ।।११।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">तस्य सञ्जनयन्हर्ष, कुरुवृद्धः पितामहः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s4">सिंहनादं विनद्योच्चैः, शङखं दध्मौ प्रतापवान् ।।०१/१२।।</span></p>
+<p class="p5"><span class="s5">तस्य सञ्जनयन् हर्षम्, करुवृद्धः पितामहः ।</span></p>
+<p class="p5"><span class="s5">सिंहनादम् विनद्य उच्चैः, शङ्खम् दध्मौ प्रतापवान् ।।</span></p>
+<p class="p6"><span class="s6">प्रतापवान्, कुरुवृद्धः, पितामहः, तस्य, हर्षम् संजनयन्, उचैः, सिंहनादम्, विनद्य, शङ्खम् दध्मौ.</span></p>
+<p class="p1"><span class="s1">(प्रतापवान्) महान प्रतायशाली असे, (कुरुवृद्धः) कुरुकुळात सर्वांपेक्षा वडिल, (पितामहः) भीष्म पितामहांनी, (तस्य) त्या दुर्योधनाला, (हर्षम् सञ्जनयन्) हर्षविणारा, आनंदविणारा, (उच्चैः) मोठ्या जोराने, (सिंहनादम्) सिंहनादासारखा, (विनद्य) भर्जणारा, (शङ्खम् दध्मो) शंखाचा आवाज केला. ।।१२।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">ततः शङ्खाश्च भेर्यश्च, पणवानकगोमुखाः ।</span></p>
+<p class="p4"><span class="s4">सहसैवाभ्यहन्यन्त, स शब्दस्तुमुलोऽभवत् ।।०१/१३।।</span></p>
+<p class="p5"><span class="s5">ततः शङ्खाः च भेर्यः च, पणवः अनक गोमुखाः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">सहसा एव अभ्यहन्यन्त, स शब्दः तुमुलः अभवत् ।।</span></p>
+<p class="p6"><span class="s6">ततः, शंखाः, भेर्यः, च, पणवः, आनक, गोमुखाः, सहसा एव, अभ्यहन्यन्त, सः, शब्दः, तुमुलः, अभवत्.</span></p>
+<p class="p1"><span class="s1">(ततः) त्यानंतर, (शङच्खाः) अनेक शंख, (भेर्यः) नगारे, (च) आणि, (पणवः) ढोल, (आनक) मृदंग, (गोमुखाः) गोमुख नावाचे रणवाद्य, (सहसा एव) एकदमच, (अभ्यहन्यन्त) वाजु लागली, (सः) तो, (शब्दः) ध्वनी, (तुमुलः) फार भयंकर, (अभवत्) झाला. ।।१३।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">ततः श्वेतैर्हयैर्युक्ते, महति स्यन्दने स्थितौ ।</span></p>
+<p class="p4"><span class="s4">माधवः पाण्डवश्चैव, दिव्यौ शङखौ प्रदध्मतुः ।।०१/१४।।</span></p>
+<p class="p5"><span class="s5">ततः श्वेतैः हयैः युक्तेः, महति स्यन्दने स्थितौ ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">माधवः पाण्डवः च एव, दिव्यौ शङ्खौ प्रदध्मतुः ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">ततः, श्वेतैः, हयैः, युक्तैः, महति, स्यन्दने, स्थितौ,माधवः च, पाण्डवः, दिव्यौ शंखौ, प्रदध्मतुः.</span></p>
+<p class="p1"><span class="s1">(ततः) त्यानंतर, (श्वेतैः) पांढऱ्या शुभ्र, (हयैः) घोड्यानी, (युक्तः) युक्त अशा, (महति) अवाढव्य अशा, (स्यन्दने) रथात, (स्थिती) असलेले, (माधवः) श्रीकृष्ण भगवंत, (च) आणि, (पाण्डवः) अर्जुन (दोघांनी), (दिव्यो शङ्खो) अलौकिक असे शंख, (ग्रदध्दमतुः) वाजविले. ।।१४।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">पाञ्चजन्यं हृषीकेशो, देवदतं धनञ्जयः ।</span></p>
+<p class="p4"><span class="s4">पौण्ड्रं दध्मौ महाशङखं, भीमकर्मा वृकोदरः ।।०१/१५।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">पाञ्चजन्यम् हृषीकेशः, देवदत्तम् धनञ्जयः ।</span></p>
+<p class="p5"><span class="s5">पौण्ड्रम् दध्मौ महाशङ्खम्, भीमकर्मा वृकोदरः ।।</span></p>
+<p class="p6"><span class="s6">हृषिकेशः, पाञ्चजन्यम्, धनंजयः, देवदत्तम्, भीमकर्मा, पौण्ड्रम्, महाशंखम्, दध्मौ.</span></p>
+<p class="p1"><span class="s1">(हृषिकेशः) श्रीकृष्ण भगवंतांनी, (पाञ्चजन्यम्) पांचजन्य नावाचा शंख, (धनञ्जयः) अर्जुनाने, (देवदत्तम्) देवदत्त नावाचा शंख, (भीमकर्मा) भयंकर कर्म करणाऱ्या भिमाने, (पौण्ड्रम्) पौण्ड्र नावाचा, (महाशङ्खम्) फार मोठा शंख, (दध्मौ) वाजविला. ।।१५।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अनन्तविजयं राजा, कुन्तीपुत्रो युधिष्ठिरः ।</span></p>
+<p class="p4"><span class="s4">नकुलः सहदेवश्च, सुघोषमणिपुष्यकौ ।।०१/१६।।</span></p>
+<p class="p5"><span class="s5">अनन्तविजयम् राजा, कुन्तीपुत्रः युधिष्ठिरः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">नकुलः सहदेवः च, सुघोषमणिपुष्पकौ ।।</span></p>
+<p class="p6"><span class="s6">कुन्तीपुत्रः, राजा युधिष्ठिरः, अनन्तविजयम्, नकुलः च सहदेव, सुघोषमणिपुष्पकौ.</span></p>
+<p class="p1"><span class="s1">(कुन्तीपुत्रः) कुन्तीचा पुत्र, (राजा युधिष्ठिरः) पांडव पक्षाचा राजा धर्म याने, (अनन्तविजयम्) अनंत नावाचा शंख, (नकुलः च सहदेव) नकुल आणि सहदेव या दोघांनी, (सुघोषमणिपुष्पकौ) सघोष व मणिपुष्पक नावाचे शंख (वाजविले). ।।१६।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">काश्यश्च परमेष्वासः, शिखण्डी च महारथः ।</span></p>
+<p class="p4"><span class="s4">धृष्टद्युम्नो विराटश्च, सात्यकिश्चापराजितः ।।०१/१७।।</span></p>
+<p class="p5"><span class="s5">काश्यः च परमेष्वासः, शिखण्डी च महारथः ।</span></p>
+<p class="p5"><span class="s5">धृष्टद्युम्नः विराटः च, सात्यकिः च अपराजितः ।।</span></p>
+<p class="p6"><span class="s6">च, परमेष्वासः, काश्यः, च, महारथः शिखण्डी,च, धृष्टद्युम्नः, विराटः, च, अपराजितः सात्यकिः.</span></p>
+<p class="p1"><span class="s1">(च) आणि, (परमेष्वासः) महाधनुर्धर, (काश्यः) काशीराजाने, (च) आणि, (महारथः शिखण्डी) महारथी शिखंडीने, (च) आणि, (धृष्टद्युखः) सेनापती धृष्टद्युम्नाने, (विराटः) विराट राजाने, (च) आणि, (अपराजितः सात्यकिः) अजिंक्यअशा सात्यकीने, (आपापला शंख वाजविला.) ।।१७।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">द्रुपदो द्रौपदेयाश्च, सर्वशः पृथिवीपते ।</span></p>
+<p class="p4"><span class="s4">सौभद्रश्च महाबाहुः, शङ्खान्दध्मुः पृथक् पृथक् ।।०१/१८।।</span></p>
+<p class="p5"><span class="s5">द्रुपदः द्रौपदेयाः च, सर्वशः पृथिवीपते ।</span></p>
+<p class="p5"><span class="s5">सौभद्रः च महाबाहुः, शङ्खान् दध्मुः पृथक् पृथक् ।।</span></p>
+<p class="p6"><span class="s6">पृथिवीपते, द्रुपदः, च, द्रौपदेयाः, च, महाबाहुः सौभद्रः, सर्वशः, पृथक पृथक, शंखन्, दध्मुः.</span></p>
+<p class="p1"><span class="s1">(पृथवीपते) हे धृतराष्ट्र राजा, (कृपदः) द्रुपद राजा, (च) आणि, (द्रौपदेयाः) द्रौपदीचे पाचही पुत्र, (च) त्याचप्रमाणे, (महाबाहुः सौभद्रः) महाबलशाली भुजांचा अभिमन्यु, (सर्वशः) या सर्वांनी सगळीकडून, (पृथक पृथक) आपापले वेगवेगळे, (शङखन) शंख, (दध्मुः) वाजविले. ।।१८।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">स घोषो धार्तराष्ट्राणां, हृदयानि व्यदारयत् ।</span></p>
+<p class="p4"><span class="s4">नभश्च पृथिवीं चैव, तुमुलो व्यनुनादयन् ।।०१/१९।।</span></p>
+<p class="p5"><span class="s5">स घोषः धार्तराष्ट्राणाम्, हृदयानि व्यदारयत् ।</span></p>
+<p class="p5"><span class="s5">नभः च पृथिवीम् च एव, तुमुलः व्यनुनादयन ।।</span></p>
+<p class="p6"><span class="s6">सः, तुमुलः घोषः, नभः, च, पृथिवीम्, एव, व्यनुनादयन, च, धार्तराष्ट्राणाम्, हृदयानि, व्यदारयत्.</span></p>
+<p class="p1"><span class="s1">(सः) तो, (तुमुलः घोषः) महाभयंकर असा आवाज, (नभः) आकाश, (च) आणि, (पृथिवीम्) पृथ्वीला, (एव) देखील, (व्यनुनादयन) दणाणून सोडीत, (च) आणि, (धार्तराष्ट्राणाम्) धृतराष्ट्र पुत्र कौरवांची, (हृदयानि) अंतःकरणे, (व्यदास्यत) जणु काही विदीर्ण करु लागला. ।।१९।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अथ व्यवस्थितान्दृष्या, धार्तराष्ट्रान् कपिध्वजः ।</span></p>
+<p class="p4"><span class="s4">प्रवृत्ते शस्त्रसम्पाते, धनुरुद्यम्य पाण्डवः ।।०१/२०।।</span></p>
+<p class="p5"><span class="s5">अथ व्यवस्थितान् दृष्ट्वा, धार्तराष्ट्रान् कपिध्वजः ।</span></p>
+<p class="p5"><span class="s5">प्रवत्ते शस्त्रसम्पाते, धनुः उद्यम्य पाण्डवः ।।</span></p>
+<p class="p4"><span class="s4">हृषीकेशं तदा वाक्यं, इदमाह महीपते ।</span></p>
+<p class="p5"><span class="s5">हृषीकेशम् तदा वाक्यम्, इदम् आह महीपते ।</span></p>
+<p class="p6"><span class="s6">महीपते, कपिध्वजः पाण्डवः, धार्तराष्ट्रान्, व्यवस्थितान्, दृष्ट्या, प्रवृत्ते शस्त्रसंपाते,</span></p>
+<p class="p6"><span class="s6">तदा, धनुः, उद्यम्य, हृषिकेशम्, इदम् वाक्यम्, आह.</span></p>
+<p class="p1"><span class="s1">(महीयते) हे धृतराष्ट्रा, (कपिध्वजः पाण्डवः) ज्याच्या रथावर हनुमंत आहे असा अर्जुन, (धार्तराष्ट्रन्) सर्व धृतराष्ट्रपुत्र कौरवांना, (व्यवस्थितान्) युद्धासाठी उभे असलेले, (दृष्टवा) पाहून, (प्रवृत्ते शख्खसंपाते) एकमेकावर शख्त्रप्रहार करण्याच्या, (तदा) अशा वेळी, (धनः) आपले गांडीव धनुष्य, (उद्यम्य) उचलून (उभारून), (हृषिकेशम्) श्रीकृष्ण भगवंतांना, (इदम् वाक्यम्) हे वचन, (आह) बोलला. ।।२०- २१(१)।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p8"><span class="s3">अर्जुन उवाच</span></p>
+<p class="p4"><span class="s4">सेनयोरुभयोर्मध्ये, रथं स्थापय मेऽच्युत ।।०१/२१।।</span></p>
+<p class="p5"><span class="s5">सेनयोः उभयोः मध्ये, रथम् स्थापय मे अच्युत ।।</span></p>
+<p class="p4"><span class="s4">यावदेतान्निरी क्षेऽहं, योडुकामानवस्थितान् ।</span></p>
+<p class="p4"><span class="s4">कैर्मया सह योद्धव्यं, अस्मिक्षणसमुद्यमे ।।०१/२२।।</span></p>
+<p class="p5"><span class="s5">यावत् एतान् निरीक्षे अहम्, योडुकामान् अवस्थितान् ।</span></p>
+<p class="p5"><span class="s5">कैः मया सह योद्धव्यम्, अस्मिन् रणसमुद्यमे ।।</span></p>
+<p class="p6"><span class="s6">अर्जुन उवाच, अच्युत, अस्मिन्, रणसमुद्यमे, मया सह, कैः योद्धव्यम्, एतान्,</span></p>
+<p class="p6"><span class="s6">योडुकामान्, अवस्थितान्, यावत्, अहम्, निरीक्षे, मे, रथम्, उभयोः सेनयोः, मध्ये, स्थापय.</span></p>
+<p class="p1"><span class="s1">(अर्जुन उवाच) अर्जुन म्हणाला, (अच्युत) हे भगवंता श्रीकृष्णदेवा, (अस्मिन) या, (रणसमुद्यमे) रणसंग्रामात, युद्धधुमाळीत, (मया सह) माझ्याबरोबर, माझ्याशी, (कैः योद्धव्यम्) कोणाला युद्ध करायचे आहे, (एतान्) अशा, (योद्धकामान्) युद्ध करण्याच्या इच्छेने, (अवस्थितान्) उभे असलेल्यांना, (यावत्) जोपर्यंत, (अहम्) मी, (निरीक्षे) चांगल्या प्रकारे पाहून घेतो (तोपर्यंत), (मे) माझा, (रथम्) रथ, (उभयोः सेनयोः) दोन्ही सैन्यांच्या, (मध्ये) मध्यभागी, (स्थापय) उभा करा. ।।२१ (२)-२२।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">योत्स्यमानानवेक्षेऽहं, य एतेऽत्र समागताः ।</span></p>
+<p class="p4"><span class="s4">धार्तराष्ट्रस्य दुर्बुद्धेर्, युद्धे प्रियचिकीर्षवः ।।०१/२३।।</span></p>
+<p class="p5"><span class="s5">योत्स्यमानान् अवेक्षे अहम्, य एते अत्र समागताः ।</span></p>
+<p class="p5"><span class="s5">धार्तराष्ट्रस्य दुर्बुद्धे, युद्धे प्रियचिकीर्षवः ।।</span></p>
+<p class="p6"><span class="s6">दुर्बुद्धे, धार्तराष्ट्रस्य, प्रियचिकीर्षव, ये, अत्र, युद्धे, योत्स्यमानान्, समागताः, एते, अहम्, अवेक्षे.</span></p>
+<p class="p1"><span class="s1">(दुर्बुद्धेः) दुष्ट बुद्धी असलेल्या, (धार्तराष्ट्रस्य) दुर्योधनाचे, (प्रिचिकीर्षवः) भलं करू इच्छिणारे, (ये) जे जे, (अत्र) या ठिकाणी, (युद्धे) युद्ध करण्यासाठी, (योत्स्यमानान्) (युद्ध करणारे) योद्धे, (समागताः) एकत्र झालेले आहेत, (एते) त्या सर्वांना, (अहम्) मी, (अवेक्ष्य) पाहू इच्छितो. ।।२३।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p3"><span class="s3">सञ्जय उवाच</span></p>
+<p class="p4"><span class="s4">एवमुक्तो हृषीकेशो, गुडाकेशेन भारत ।</span></p>
+<p class="p4"><span class="s4">सेनयोरुभयोर्मध्ये, स्थापयित्वा रथोत्तमम् ।।०१/२४।।</span></p>
+<p class="p5"><span class="s5">एवम् उक्तः हृषीकेशः, गुडाकेशेन भारत ।</span></p>
+<p class="p5"><span class="s5">सेनयोः उभयोः मध्ये, स्थापयित्वा रथोत्तमम् ।।</span></p>
+<p class="p4"><span class="s4">भीष्मद्रोणप्रमुखतः, सर्वेषां च महीक्षिताम् ।</span></p>
+<p class="p4"><span class="s4">उवाच पार्थ पश्यैतान्, समवेतान्कुरूनिति ।।०१/२५।।</span></p>
+<p class="p5"><span class="s5">भीष्मद्रोणप्रमुखतः, सर्वेषाम् च महीक्षिताम् ।</span></p>
+<p class="p5"><span class="s5">उवाच पार्थ पश्यैतान्, समवेतान् कुरुन् इति ।।</span></p>
+<p class="p6"><span class="s6">भारत, गुडाकेशेन, एवम्, उक्तः, हृषिकेशः, रथोत्तमम्, उभयोः सेनयोः, मध्ये, सर्वेषाम् महीक्षिताम्, च, भीष्मद्रोणप्रमुखतः, स्थापयित्वा, इति उवाच, पार्थ, एतान् समवेतान्, कुरुन्, पश्य.</span></p>
+<p class="p1"><span class="s1">(भारत) हे भरतकुलोत्पन्न धृतराष्ट्रा, (गुडाकेशेन) निद्रेवर विजय मिळवणाऱ्या अर्जुनाने, (एवम्) अशाप्रकारे, (उक्तः) म्हटल्यावर, (हृषिकेशः) श्रीकृष्ण भगवंतांनी, (रथोत्तमम्) तो श्रेष्ठ प्रकारचा रथ, (उभयोः सेनयोः) दोन्ही सैन्याच्या, (मध्ये) मध्यभागी, (सर्वेशाम् महीक्षिताम्) सर्व राजे लोकांच्या, (च) आणि, (भीष्मद्रोणप्रमुखतः) भीष्मद्रोण इत्यादी प्रमुख योद्ध्यांच्या समोर, (स्थापयित्वा) उभा करून, (इति उवाच) श्रीभगवंत असे म्हणाले की, (पार्थ) हे अर्जुना, (एतान समवेतान) (युद्धासाठी एकत्र आलेल्या ह्या), (कुरून्) कुरुवंशीयांना, (पश्य) पहा ।।२४-२५।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">तत्रापश्यत्स्थितान् पार्थः, पितृनथ पितामहान् ।</span></p>
+<p class="p4"><span class="s4">आचार्यान्मातुलान्भ्रातृन्, पुत्रान्पौत्रान्सखींस्तथा ।।०१/२६।।</span></p>
+<p class="p5"><span class="s5">तत्र अपश्यत् स्थितान् पार्थः, पितृन् अथ पितामहान् ।</span></p>
+<p class="p5"><span class="s5">आचार्यान् मातुलान् भ्रातृन्, पुत्रान् पौत्रान् सखीन् तथा ।।</span></p>
+<p class="p4"><span class="s4">श्वशुरान् सुहृदश्चैव, सेनयोरुभयोरपि ।</span></p>
+<p class="p5"><span class="s5">श्वशुरान् सुहृदः च एव, सेनयोः भयोः अपि ।</span></p>
+<p class="p1"><span class="s1">अथ, पार्थ, तत्र, उभयोः अपि, सेनयोः, पितृन्, पितामहान्, आचार्यान्, मातुलान्, भ्रातृन्, पुत्रान्, पौत्रान्, तथा, सखीन्, वशुरान्, च, सुहृद्, एव, स्थितान्, अपश्यत्. (अथः) त्यानंतर, (पार्थ) पृथापुत्र अर्जुनाने, (तत्र) त्या ठिकाणी, (उभयोः</span></p>
+<p class="p1"><span class="s1">अपि) दोन्हीही, (सेनयोः) सैन्यात, (पितृन्) चुलते, (पितामहान्) आजे, (आचार्यान्) गुरुजन, (मातुलान्) मामे, (भ्रातृन्) बंधुवर्ग, (पुत्रान्) मुले व पुतणे, (पौत्रान्) नातु, (तथा) त्याचप्रमाणे, (सखीन) मित्रवर्ग, (श्वशुरान्) सासरे, (च) आणि, (सुहद) सेहा प्रेमाचे लोक, (एव) ह्यांनाच (अशांनाच), (स्थितान्) युद्धासाठी</span></p>
+<p class="p1"><span class="s1">उभे असलेले, (अपश्यत्) पाहिले ।।२६-२७ (१)।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">तान्समीक्ष्य स कौन्तेयः, सर्वान्बन्धूनवस्थितान् ।।०१/२७।।</span></p>
+<p class="p5"><span class="s5">तान् समीक्ष्य सः कौन्तेयः, सर्वान् बन्धून् अवस्थितान् ।।</span></p>
+<p class="p4"><span class="s4">कृपया परयाविष्टो, विषीदन्निदमब्रवीत् ।</span></p>
+<p class="p5"><span class="s5">कृपया परया अविष्टः, विषीदन् इदम् अब्रवीत् ।</span></p>
+<p class="p6"><span class="s6">विषीदन्, इदम्, अब्रवीत्.तान्, सर्वान् बन्धून्, अवस्थितान्, समीक्ष्य, परया कृपया, आविष्टः, सः कौन्तेय,</span></p>
+<p class="p1"><span class="s1">(तान्) त्या, (सर्वान् बन्धून्) सर्व बांधवांना, (अवस्थितान्) युद्धासाठी उभे असलेले, (समीक्ष्य) पाहून, (परया कृपया) अत्यंत करुणेने (किवेने), (आविष्टः) व्याकुळ झालेला, (सः कौन्तेय) तो कुन्तीपुत्र अर्जुन, (विषीदन्) खिन्न होऊन विषादाने, (इदम्) असे (पुढीलप्रमाणे), (अब्रवीत्) बोलू लागला ।।२७ (२)- २८(१)।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p8"><span class="s3">अर्जुन उवाच</span></p>
+<p class="p4"><span class="s4">दृष्टुमं स्वजनं कृष्ण, युयुत्सुं समुपस्थितम् ।।०१/२८।।</span></p>
+<p class="p5"><span class="s5">दृष्टवा इमम् स्वजनम् कृष्ण, युयुत्सुम् समुपस्थितम् ।।</span></p>
+<p class="p4"><span class="s4">सीदन्ति मम गात्राणि, मुखं च परिशुष्यति ।</span></p>
+<p class="p4"><span class="s4">वेपथुश्च शरीरे मे, रोमहर्षश्च जायते ।।०१/२९।।</span></p>
+<p class="p5"><span class="s5">सीदन्ति मम गात्राणि, मुखम् च परिशुष्यति ।</span></p>
+<p class="p5"><span class="s5">वेपथुः च शरीरे मे, रोमहर्षः च जायते ।।</span></p>
+<p class="p6"><span class="s6">कृष्ण, इमम्, युयुत्सुम्, समुपस्थितम्, स्वजनम्, दृष्ट्या, मम, गात्राणि, सीदन्ति, च,</span></p>
+<p class="p1"><span class="s1">मुखम्, परिशुष्यति, च, मे शरीरे, वेपथुः, च, रोमहर्षः, जायते.</span></p>
+<p class="p1"><span class="s1">(अर्जुन उवाच) अर्जुन म्हणाला, (कृष्ण) हे श्रीकृष्ण देवा, (इमम्) है, (युयुत्सुम्) युद्धासाठी उत्सुक झालेले, (समुपस्थितम्) समोर उभे असलेले, (स्वजनम्) माझेच संबंधी लोक, (दृष्टवा) पाहून, (मम) माझे, (गात्राणि) गात्रे, इंद्रिये, (सीदन्ति) शिथील होऊ लागले आहेत, (च) आणि, (मुखम्) तोंड देखील, (परिशुष्यति) कोरडं पडू लागलं आहे, (च) तसेच, (मे शरीरे) माझ्या सर्व अंगाला, (वेपथुः) थरकाप सुटला, (च) आणि, (रोमहर्षः) रोमांच, (जायते) उठले आहेत. ।।२८ (२)-२९।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">गाण्डीवं संसते हस्तात्, त्वक्चैव परिदह्यते ।</span></p>
+<p class="p4"><span class="s4">न च शक्नोम्यवस्थातुं, भ्रमतीव च मे मनः ।।०१/३०।।</span></p>
+<p class="p5"><span class="s5">गाण्डीवम् खंसते हस्तात्, त्वक् च एव परिदह्यते ।</span></p>
+<p class="p5"><span class="s5">न च शक्नोमि अवस्थातुम्, भ्रमति इव च मे मनः ।।</span></p>
+<p class="p6"><span class="s6">हस्तात्, गाण्डीवम्, संसते, च, त्वक्, परिदह्यते एव, च, मे मनः, भ्रमति इव, अवस्थातुम् च, न शक्नोमि.</span></p>
+<p class="p1"><span class="s1">(हस्तात्) हातातून, (गाण्डीवम्) माझे गांडीव धनुष्य, (संसते) गळू पाहाते आहे, (च) आणि, (त्वक्) त्वचा, (परिदह्यते एव) जणू काही जळते आहे, (च) त्याचप्रमाणे, (मे मनः) माझे मन, (भ्रमति इव) भ्रमित झाले आहे, (अवस्थातुम् च) मला उभे राहणेदेखील, (न शक्नोमि) शक्य नाही असे वाटते ।।३०।।</span></p>
+<p class="p9"><span class="s4"></span><br></p>
+<p class="p4"><span class="s4">निमित्तानि च पश्यामि, विपरितानि केशव ।</span></p>
+<p class="p4"><span class="s4">न च श्रेयोऽनुपश्यामि, हत्वा स्वजनमाहवे ।।०१/३१।।</span></p>
+<p class="p5"><span class="s5">न च श्रेयः न अपश्यामि, हत्वा स्वजनम् आहवे ।।</span></p>
+<p class="p5"><span class="s5">केशव, निमित्तानि, च, विपरीतानि, पश्यामि,</span></p>
+<p class="p6"><span class="s6">च, स्वजनम्, आहवे, हत्वा, श्रेयः, न अनुपश्यामि.</span></p>
+<p class="p1"><span class="s1">(केशव) हे केशवा, (निमित्तनि) सगळी लक्षणे, (च) देखील, (विपरीतानि) अशुभासारखी, (पश्यामि) दिसत आहे, (च) कारण की, (स्वजनम्) आपल्याच लोकांना, (आहवे) युध्दात, (हत्वा) मारून, (श्रेयः) कल्याण होईल असे, (न अनुपश्यामि) दिसत नाही, वाटत नाही ।। ३१।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">न काङ्क्ष विजयं कृष्ण, न च राज्यं सुखानि च ।</span></p>
+<p class="p5"><span class="s5">न काङ्क्ष विजयम् कृष्ण, न च राज्यम् सुखानि च ।</span></p>
+<p class="p4"><span class="s4">किं नो राज्येन गोविन्द, किं भोगैर्जीवितेन वा ।।०१/३२।।</span></p>
+<p class="p5"><span class="s5">किम् नः राज्येन गोविन्द, किम् भोगैः जीवितेन वा ।।</span></p>
+<p class="p6"><span class="s6">कृष्ण, विजयम्, न काङ्क्ष, च, राज्यम्, च, सुखानि, न काङ्क्ष, गोविन्द, नः, राज्येन किम्, वा, भोगैः, किम्, जीवितेन किम्.</span></p>
+<p class="p1"><span class="s1">(कृष्ण) हे श्रीकृष्ण देवा, (विजयम्) आमचा विजय व्हावा असे, (न काङ्क्ष) मी इच्छित नाही, (च) तसेच, (राज्यम्) राज्य प्राप्त व्हावे, (च) आणि, (सुखानि) सर्व सुखे प्राप्त व्हावे असेही, (न काङ्क्ष) इच्छित नाही कारण की, (गोविन्द) हे गोविंदा, (नः) आम्हाला, (राज्येन किम्) राज्य घेऊन काय मोठासा लाभ होणार, (वा) अथवा, (भोगैः) उपभोग प्राप्त झाले तरी, (किम्) काय मोठासा लाभ होणार आणि, (जिवितेन किम्) अशा रीतीने जगण्यात तरी काय अर्थ. ।।३२।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">येषामर्थे काङ्क्षितं नो, राज्यं भोगाः सुखानि च ।</span></p>
+<p class="p4"><span class="s4">त इमेऽवस्थिता युद्धे, प्राणांस्त्यक्त्वा धनानि च ।।०१/३३।।</span></p>
+<p class="p5"><span class="s5">येषाम् अर्थे काङ्क्षितम् नः, राज्यम् भोगाः सुखानि च ।</span></p>
+<p class="p5"><span class="s5">त इमे अवस्थिताः युद्धे, प्राणान् त्यक्त्वा धनानि च ।।</span></p>
+<p class="p6"><span class="s6">येषाम् अर्थे, राज्यम्, भोगाः, च सुखानि, नः, काङ्क्षितम्,ते इमे, धनानि, च, प्राणान्, त्यक्त्वा, युद्धे, अवस्थिताः.</span></p>
+<p class="p1"><span class="s1">कारण की, (येषाम् अर्थ) ज्यांच्यासाठी, (राज्यम्) राज्य, (भोगाः) सगळे उपभोग, (च) आणि, (सुखानि) सर्व सुखांची, (नः) आम्हाला, (काङ्क्षितम्) इच्छा आहे, (ते इमे) ते हे सगळे कौरव बंधु, (धनानि) धनाची, (च)आणि, (प्राणान्) प्राणाची, (त्यक्त्वा) (आशा) सोडून, (युध्दे) युध्दासाठी,(अवस्थिताः) उभे राहीले ।। ३३ ।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">आचार्याः पितरः पुत्रास्, तथैव च पितामहाः ।</span></p>
+<p class="p4"><span class="s4">मातुलाः श्वशुराः पौत्राः, श्यालाः सम्बन्धिनस्तथा ।।०१/३४।।</span></p>
+<p class="p5"><span class="s5">आचार्याः पितरः पुत्राः, तथा एव च पितामहाः ।</span></p>
+<p class="p5"><span class="s5">मातुलाः श्वशुराः पौत्राः, श्यालाः सम्बन्धिनः तथा ।।</span></p>
+<p class="p6"><span class="s6">आचार्याः, च, पितरः, तथा, पुत्राः, पितामहः,मातुलाः, श्वशुराः, पौत्राः, श्यालाः, तथा एव, सम्बधिनः.</span></p>
+<p class="p1"><span class="s1">(आचार्याः) गुरुजन, (च) आणि, (पितरः) चुलते, काके, (तथा) तसेच, (पुत्राः) मुले पुतणे, (पितामहः) आजे, (मातुलाः) मामे, (श्वशुरः) सासरे, (पौत्राः) नातूवर्ग, (श्यालाः) मेहुणे, (तथा एव) त्याचप्रमाणे, (सम्बधिनः) आणखीही जे संबंधीये आहेत. ।।३४।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">एतान्न हन्तुमिच्छामि, घ्नतोऽपि मधुसूदन ।</span></p>
+<p class="p4"><span class="s4">अपि त्रैलोक्यराज्यस्य, हेतोः किं नु महीकृते ।।०१/३५।।</span></p>
+<p class="p1"><span class="s1">(मधुसूदन) हे मधुसूदना, (त्रैलोक्यराजस्य) तिन्ही लोकांच्या, (हेतोः) प्राप्तीसाठी, (अपि) देखील, (एतान्) या सर्वांना, (हन्तुम्) मारू, (न इच्छामि) इच्छित नाही, (घ्नतः अपि) (फार काय) यांनी मला मारले तरी देखील, (मी त्यांना मारू इच्छित नाही), (महीकृते) क्षुल्लक अशा पृथ्वीच्या राज्याची, (नु किम्) काय गरज? ।।३५।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">निहत्य धार्तराष्ट्रान्नः, का प्रीतिः स्याज्जनार्दन ।</span></p>
+<p class="p4"><span class="s4">पापमेवाश्रयेदस्मान्, हत्वैतानाततायिनः ।।०१/३६।।</span></p>
+<p class="p5"><span class="s5">निहत्य धार्तराष्ट्रान् नः, का प्रीतिः स्यात् जनार्दन ।</span></p>
+<p class="p5"><span class="s5">पापम् एव आश्रयेत् अस्मान् हत्वा एतान् आततायिनः ।।</span></p>
+<p class="p6"><span class="s6">जनार्दन, धार्तराष्ट्रान्, निहत्य, नः, का, प्रीतिः, स्यात्, एतान् आततायिनः, हत्वा, अस्मान्, पापम् एव, आश्रयेत्.</span></p>
+<p class="p1"><span class="s1">(जनार्दन) हे जनार्दना, (धार्तराष्ट्रान्) धृतराष्ट्राच्या पुत्रांना, (निहत्य) मारून, (नः) आमचे, (का) काय, (प्रितीः) प्रिय, (स्यात्) होइल, (एतान् आततायिनः) ह्या आततायी लोकांना, (हत्वा) मारून, (अस्मान्) आम्हाला, (पापम् एव) पातकच, (आश्रयेत्) लागेल ।। ३६ ।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">तस्मान्नार्हा वयं हन्तुं, धार्तराष्ट्रान् स्वबान्धवान् ।</span></p>
+<p class="p5"><span class="s5">तस्मात् न अर्हाः वयम् हन्तुम्, धार्तराष्ट्रान् स्वबान्धवान् ।</span></p>
+<p class="p4"><span class="s4">स्वजनं हि कथं हत्वा, सुखिनः स्याम माधव ।।०१/३७।।</span></p>
+<p class="p5"><span class="s5">स्वजनम् हि कथम् हत्वा, सुखिनः स्याम माधव ।।</span></p>
+<p class="p6"><span class="s6">तस्मात्, माधव, स्वबान्धवान्, धार्तराष्ट्रान्, हन्तुम्, वयम्, न अर्हाः,</span></p>
+<p class="p1"><span class="s1">हि, खजनम्, हत्वा, कथम्, सुखिनः, स्याम.</span></p>
+<p class="p1"><span class="s1">(तस्मात्) यासाठी, (माधव) हे माधवा, (स्वबान्धवान्) आमचे बंधुजन अशा, (धार्तराष्ट्रान्) धृतराष्ट्रपुत्र कौरवांना, (हन्तुम्) मारणे, (वयम्) आम्हाला, (न अर्हाः) योग्य नव्हे, (हि) कारण, (स्वजनम्) आपल्याच लोकांना, (हत्वा) मारून, (कथम्) (आम्ही) कसे, (सुखिनः) सुखी, (स्याम) राह शकू ।।३७।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">यद्यप्येते न पश्यन्ति, लोभोपहतचेतसः ।</span></p>
+<p class="p4"><span class="s4">कुलक्षयकृतं दोषं, मित्रद्रोहे च पातकम् ।।०१/३८।।</span></p>
+<p class="p5"><span class="s5">यत् अपि एते न पश्यन्ति, लोभोपहतचेतसः ।</span></p>
+<p class="p5"><span class="s5">कुलक्षयकृतम् दोषम्, मित्रद्रोहे च पातकम् ।।</span></p>
+<p class="p6"><span class="s6">यद्यपि, लोभोपहतचेतसः, एते, कुलक्षयकृतम् दोषम्, च, मित्रद्रोहे पातकम्, न पश्यन्ति.</span></p>
+<p class="p1"><span class="s1">(यद्यपि) जरी, (लोभोपहतचेतसाः) लोभामुळे बुध्दी भ्रूष्ट झालेले, (एते) हे लोक, (कुलक्षयकृतम् दोषम्) कुलक्षयामुळे होणारा दोष, पाप, (च) आणि, (मित्रद्रोहे पातकम्) मित्रद्रोहामुळे होणारे पातक, (न पश्यन्ति) पहात नाहीत ।। ३८ ।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">कथं न ज्ञेयमस्माभिः, पापादस्मान्निवर्तितुम् ।</span></p>
+<p class="p4"><span class="s4">कुलक्षयकृतं दोषं, प्रपश्यद्भिर्जनार्दन ।।०१/३९।।</span></p>
+<p class="p5"><span class="s5">कथम् न ज्ञेयम् अस्माभिः, पापात् अस्मात् निवर्तितुम् ।</span></p>
+<p class="p5"><span class="s5">कुलक्षयकृम् दोषम्, प्रपश्यद्भिः जनार्दन ।।</span></p>
+<p class="p6"><span class="s6">जनार्दन, कुलक्षयकृतम् दोषम्, प्रपश्यद्भिः अस्माभिः, अस्मात् पापात्, निर्वतितुम्, कथम् न ज्ञेयम्.</span></p>
+<p class="p1"><span class="s1">ते पहात नसले तरी, (जनार्दन) हे जनार्दना, (कुलक्षयकृतम् दोषम्)</span></p>
+<p class="p1"><span class="s1">कुलक्षयामुळे होणारे पाप, (प्रपश्यद्भिः अस्माभिः) जाणणाऱ्या आम्ही लोकांनी, (अस्मात् पापात्) ह्या पापकर्मापासून, (निवर्तितुम्) दूर होण्याचा निवृत्त होण्याचा, (कथम् न ज्ञेयम्) विचार करु नये काय ? अर्थात विचार करायलाच पाहिजे ।। ३९ ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">कुलक्षये प्रणश्यन्ति, कुलधर्माः सनातनाः ।</span></p>
+<p class="p4"><span class="s4">धर्मे नष्टे कुलं कृत्यं, अधर्मोऽभिभवत्युत ।।०१/४०।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">कुलक्षये प्रणश्यन्ति, कुलधर्माः सनातनाः ।</span></p>
+<p class="p5"><span class="s5">धर्मे नष्टे कुलम् कृत्वामम् अधर्मः भिभवति उत ।।</span></p>
+<p class="p6"><span class="s6">कुलक्षये, सनातनाः, कुलधर्माः, प्रणश्यन्ति,धर्मे नष्टे, कृत्याम्‌कुलम्, अधर्मः, अभिभवति उत.</span></p>
+<p class="p1"><span class="s1">(कुलक्षये) कुलाचा नाश झाला असता, (सनातनाः) पुरातन काळापासून चालत आलेले, (कुलधर्माः) कुळधर्म, (प्रणश्यन्ति) नाश पावतात, (धर्मे नष्टे) अशाप्रकारे कुळधर्म नाश झाले असता, (कृत्वाम् कुलम्) सर्व कुळाला, (अधर्मः) अधर्म, (अभिभवति उत) घेरूनच टाकतो ।।४०।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अधर्माभिभवात्कृष्ण, प्रदुष्यन्ति कुलस्त्रियः ।</span></p>
+<p class="p4"><span class="s4">स्त्रीषु दुष्टासु वाष्णेय, जायते वर्णसङ्करः ।।०१/४१।।</span></p>
+<p class="p5"><span class="s5">अधर्माभिभवात् कृष्ण, प्रदुष्यन्ति कुलस्त्रियः ।</span></p>
+<p class="p5"><span class="s5">स्त्रीषु दुष्टासु वाष्णेय, जायते वर्णसङ्करः ।।</span></p>
+<p class="p6"><span class="s6">कृष्ण, अधर्माभिभवात्, कुलस्त्रियः, प्रदुष्यन्ति,</span></p>
+<p class="p6"><span class="s6">वाष्णेय, स्त्रीषु दुष्टासु, वर्णसङ्करः, जायते.</span></p>
+<p class="p1"><span class="s1">(कृष्ण) हे श्रीकृष्णदेवा, (अधर्माभिभवात्) कुळावर अधर्माचा प्रभाव पडल्यामुळे, (कुलस्त्रियः) त्या कुळातील स्त्रिया, (प्रदुष्यन्ति) भ्रूष्ट होतात, (वाष्णेय) हे वृष्णीकुलोत्पन्ना श्रीकृष्णा, (स्त्रीषु दुष्टासु) अशाप्रकारे स्त्रीया भ्रूष्ट झाल्या म्हणजे, (वर्णसङ्करः) भ्रूष्ट प्रजा, (जायते) जन्माला येते. ।।४१।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">सङ्करो नरकायैव, कुलघ्नानां कुलस्य च ।</span></p>
+<p class="p4"><span class="s4">पतन्ति पितरो ह्येषां, लुप्तपिण्डोदकक्रियाः ।।०१/४२।।</span></p>
+<p class="p5"><span class="s5">सङ्करः नरकाय एव, कुलग्घ्नानाम् कुलस्य च ।</span></p>
+<p class="p5"><span class="s5">पतन्ति पितरः हि एषाम्, लुप्तपिण्डोदकक्रियाः ।।</span></p>
+<p class="p6"><span class="s6">सङ्करः, कुलघ्नानाम्, च, कुलस्य, नरकाय एव,एषाम्, पितरः, हि, लुप्तपिण्डोदकक्रियाः, पतन्ति.</span></p>
+<p class="p1"><span class="s1">(सङ्करः) अशी भ्रूष्ट प्रजा व त्यांचा भ्रष्टाचार, (कुलप्नानाम्) ह्या कुलघातक्यांच्या, (च) आणि, (कुलस्य) कुलाच्या, (नरका एव) नरकालाच कारणीभूत होतो, (एषाम्) अशा कुलघातक्यांच्या, (पितरः) पूर्वज, (हि) देखील, (लुप्तपिण्डोदकक्रियाः) पिण्डदान, तर्पण, श्राद्धादिक क्रिया न घडल्यामुळे, (पतन्ति) पतन पावतात ।।४२।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">दोषैरेतैः कुलघ्नानां, वर्णसङ्करकारकैः ।</span></p>
+<p class="p4"><span class="s4">उत्साद्यन्ते जातिधर्माः, कुलधर्माश्च शाश्वताः ।।०१/४३।।</span></p>
+<p class="p5"><span class="s5">दोषैः एतैः कुलघ्नानाम्, वर्णसङ्करकारकैः ।</span></p>
+<p class="p5"><span class="s5">उत्साद्यन्ते जातिधर्माः, कुलधर्माः च शाश्वताः ।।</span></p>
+<p class="p6"><span class="s6">कुलग्घ्नानाम्, एतैः, वर्णसङ्करकारकैः, दोषैः,शाश्वतैः, कुलधर्माः, च, जातिधर्माः, उत्साद्यन्ते.</span></p>
+<p class="p1"><span class="s1">(कुलप्नानाम्) कुलघातक्यांच्या, (एतैः) ह्या, (वर्णसङ्करकारकैः) वर्णसंकर करणाऱ्या, (दोषैः) दोषामुळे, (शाश्वताः) पूर्वापार चालत आलेले, (कुलधर्माः) कुलाचे धर्म, (च) आणि, (जातिधर्माः) जातींचे धर्म यांचा, (उत्साद्यन्ते) उच्छेद होतो ।।४३।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">उत्सन्नकुलधर्माणां, मनुष्याणां जनार्दन ।</span></p>
+<p class="p4"><span class="s4">नरकेऽनियतं वासो, भवतीत्यनुशुश्रुम ।।०१/४४।।</span></p>
+<p class="p5"><span class="s5">उत्सन्नकुलधर्माणाम्, मनुष्याणाम् जनार्दन ।</span></p>
+<p class="p5"><span class="s5">नरके अनियतम् वासः, भवति इति अनुशुश्रुम ।।</span></p>
+<p class="p6"><span class="s6">जनार्दन, उत्सन्नकुलधर्माणाम्, मनुष्याणाम्, नरके, अनियतम्, वासः, भवति, इति, अनुशुश्रुम.</span></p>
+<p class="p1"><span class="s1">(जनार्दन) हे जनार्दना, (उत्सन्नकुलधर्माणाम्) ज्यांच्या कुलधर्माचा नाश झालेला आहे अशा, (मनुष्यानाम्) मनुष्यांना, (नरके) नरकात, (अनियतम्) अनंत काळपर्यंत, (वासः) वास्तव्य, (भवति) करावे लागते, (इति) असे, (अनुशुश्रम) आम्ही ऐकले आहे ।।४४।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">अहो बत महत्याएं, कर्तुं व्यवसिता वयम् ।</span></p>
+<p class="p5"><span class="s5">अहो बत महत् पापम्, कर्तुम् व्यवसिताः वयम् ।</span></p>
+<p class="p4"><span class="s4">यद्राज्यसुखलोभेन, हन्तुं स्वजनमुद्यताः ।।०१/४५।।</span></p>
+<p class="p5"><span class="s5">यत् राज्यसुखलोभेन, हन्तुम् खजनम् उद्यताः ।।</span></p>
+<p class="p6"><span class="s6">अहो बत, यत्, राज्यसुखलोभेन, खजनम्, हन्तुम्, उद्यताः, वयम्, महत् पापम्, कर्तुम्, व्यवसिताः.</span></p>
+<p class="p1"><span class="s1">(अहो बत) अहो किती खेदाची गोष्ट आहे, (यत्) की, (राज्यसुखलोभेन) राज्य सुखाच्या लोभामुळे, (वजनम्) आपल्याच लोकांचा,(हन्तुम्) वध करण्यास, (उद्यताः) तयार झालेल्या, (वयम्) आम्ही लोकांनी, (महत् पापम्) फारच मोठे पापकर्म, (कर्तुम्) करण्याचा, (व्यवसिताः) निश्चय केला आहे. ।।४५।।</span></p>
+<p class="p7"><span class="s1"></span><br></p>
+<p class="p4"><span class="s4">यदि मामप्रतीकारं, अशस्त्रं शस्त्रपाणयः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s4">धार्तराष्ट्रा रणे हन्युस्, तन्मे क्षेमतरं भवेत् ।।०१/४६।।</span></p>
+<p class="p5"><span class="s5">यदि माम् अप्रतीकारम्, अशस्त्रम् शस्त्रपाणयः ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">धार्तराष्ट्रा रणे हन्युः, तन्मे क्षेमतरम् भवेत् ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">यदि, अशस्त्रम्, अप्रतिकारम्, माम्, शस्त्रपाणयः धार्तराष्ट्राः, रणे, हन्युः, तत्, मे, क्षेमतरम्, भवेत.</span></p>
+<p class="p1"><span class="s1">(यदि) जर, (अशक्त्रम्) शस्त्ररहीत, (अप्रतिकारम्) प्रतिकार न करण्याच्या अवस्थेत अशा, (माम्) मला, (शत्रपाणयः धार्तराष्ट्राः) शस्त्रधारी कौरव लोक, (रणे) या रणभूमीवर, (हन्युः) मारून टाकतील, (तत्) तर ते मारणे देखील, (मे) माझ्यासाठी, (क्षेमतरम्) कल्याणकारकच, (भवेत) ठरेल ।।४६।।</span></p>
+<p class="p10"><span class="s3"></span><br></p>
+<p class="p3"><span class="s3">सञ्जय उवाच</span></p>
+<p class="p4"><span class="s4">एवमुक्त्वार्जुनः सङ्ख्ये, रथोपस्थ उपाविशत् ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p4"><span class="s4">विसृज्य सशरं चापं, शोकसंविग्नमानसः ।।०१/४७।।</span></p>
+<p class="p5"><span class="s5">एवम् उक्त्वा अर्जुनः सङ्ख्ये, रथोपस्थ उपाविशत् ।<span class="Apple-converted-space"> </span></span></p>
+<p class="p5"><span class="s5">विसृज्य सशरम् चापम्, शोकसंविग्नमानसः ।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p6"><span class="s6">संख्ये, शोकसंविग्नमानसः, अर्जुनः, एवम् उक्त्वा, सशरम् चापम्, विसृज्य, रथोपस्थ, उपाविशत्.</span></p>
+<p class="p1"><span class="s1">(सङ्ख्ये) रणभूमीवर, (शोकसंविग्नमानसः) शोकाने व्याकूल झालेले आहे चित्त ज्याचे असा, (अर्जुनः) अर्जुन, (एवम् उक्तवा) मागीलप्रमाणे बोलून, (सशरम् चापम्) बाणासहित धनुष्य, (विसृज्य) टाकून देऊन, (रथोपस्थ) रथाच्या मागील बाजूस, (उपाविश्यत्) बसला ।।४७।।<span class="Apple-converted-space"> </span></span></p>
+<p class="p11"><span class="s7">इति श्रीमद्भगवद्गीतासु उपनिषत्सु ब्रह्मविद्यायां योगशास्त्रे श्रीकृष्णार्जुनसंवादे अर्जुनविषादयोगो नाम प्रथमोऽध्यायः ।।१।।</span></p>
+`;
+        
+        // --- Devanagari Letters ---
+        const DEVANAGARI_LETTERS = [
+          'अ', 'आ', 'इ', 'ई', 'उ', 'ऊ', 'ऋ', 'ए', 'ऐ', 'ओ', 'औ',
+          'क', 'ख', 'ग', 'घ', 'ङ',
+          'च', 'छ', 'ज', 'झ', 'ञ',
+          'ट', 'ठ', 'ड', 'ढ', 'ण',
+          'त', 'थ', 'द', 'ध', 'न',
+          'प', 'फ', 'ब', 'भ', 'म',
+          'य', 'र', 'ल', 'व',
+          'श', 'ष', 'स', 'ह', 'ळ', 'क्ष', 'ज्ञ'
+        ];
+
+        // --- Helper Functions ---
+        const normalizeDevanagariNumber = (str) => {
+          if (!str) return '';
+          const map = { '०': '0', '१': '1', '२': '2', '३': '3', '४': '4', '५': '5', '६': '6', '७': '7', '८': '8', '९': '9' };
+          return str.replace(/[०-९]/g, (match) => map[match]);
+        };
+
+        const parseShlokaNumber = (text) => {
+          const match = text.match(/।।([०-९]+)\/([०-९]+)।।/);
+          if (match && match[1] && match[2]) {
+            return `${normalizeDevanagariNumber(match[1])}.${normalizeDevanagariNumber(match[2])}`;
+          }
+          return null;
+        };
+
+        const getFirstThreeWords = (text) => {
+          if (!text) return '';
+          const cleanText = text.replace(/<[^>]+>/g, '').replace(/[\s,।]+$/, '');
+          return cleanText.split(/[\s,।]+/).slice(0, 3).join(' ') + '...';
+        };
+
+        // --- Application State ---
+        let isLoading = true;
+        let theme = 'dark';
+        let fontSize = 16;
+        let currentView = 'grid';
+        let previousView = 'grid';
+        let chapterData = new Map();
+        let indices = { shlokas: [], padas: [], shabdas: [], vaktas: [] };
+        
+        let currentChapterNum = null;
+        let scrollToShloka = null;
+        let highlightTerm = null;
+        
+        let searchTerm = '';
+        let searchScope = 'all';
+        let currentSuchiTab = 0;
+        let currentLetterFilter = '';
+
+        // --- DOM Elements ---
+        const docEl = document.documentElement;
+        const loadingScreen = document.getElementById('loading-screen');
+        const mainContent = document.getElementById('main-content');
+        const views = {
+            grid: document.getElementById('view-grid'),
+            suchi: document.getElementById('view-suchi'),
+            search: document.getElementById('view-search'),
+            path: document.getElementById('view-path'),
+        };
+        const nav = {
+            logo: document.getElementById('nav-logo'),
+            suchi: document.getElementById('nav-suchi'),
+            search: document.getElementById('nav-search'),
+        };
+        const themeToggle = document.getElementById('theme-toggle');
+        const iconMoon = themeToggle.querySelector('.icon-moon');
+        const iconSun = themeToggle.querySelector('.icon-sun');
+        const fontDecrease = document.getElementById('font-decrease');
+        const fontIncrease = document.getElementById('font-increase');
+        const backButton = document.getElementById('back-button');
+
+        // --- Data Parsing (UPDATED for Shabd Suchi Aggregation) ---
+        function parseData() {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(MOCK_GITA_HTML, 'text/html');
+                
+                let currentChapter = 0;
+                let currentChapterName = '';
+                let chapterBlocks = [];
+                let currentVakta = '';
+                let currentShlokaBlock = null;
+                let p4Buffer = []; 
+                let currentChapterEndLine = null;
+                
+                // UPDATED: Map for aggregating shabdas
+                const shabdaMap = new Map();
+
+                const saveCurrentShlokaBlock = () => {
+                    if (currentShlokaBlock) {
+                        chapterBlocks.push(currentShlokaBlock);
+                        currentShlokaBlock = null;
+                    }
+                };
+
+                const elements = doc.body.children;
+
+                for (const el of elements) {
+                    const className = el.className;
+                    el.querySelectorAll('.Apple-converted-space').forEach(span => span.remove());
+                    const textContent = el.textContent || '';
+                    const outerHTML = el.outerHTML;
+
+                    if (className === 'p2') { 
+                        saveCurrentShlokaBlock();
+                        p4Buffer = []; 
+                        
+                        if (currentChapterEndLine) {
+                            chapterBlocks.push(currentChapterEndLine);
+                            currentChapterEndLine = null;
+                        }
+
+                        if (currentChapter > 0) {
+                            chapterData.set(currentChapter, {
+                                name: currentChapterName,
+                                blocks: chapterBlocks
+                            });
+                        }
+                        currentChapter++;
+                        const chapterTitleParts = textContent.split(' - ');
+                        currentChapterName = chapterTitleParts[1] || textContent;
+                        chapterBlocks = [{ type: 'chapterTitle', html: outerHTML, name: currentChapterName }];
+                        currentVakta = '';
+                    } else if (className === 'p3') { 
+                        saveCurrentShlokaBlock();
+                        p4Buffer = []; 
+                        currentVakta = textContent;
+                        chapterBlocks.push({ type: 'vakta', html: outerHTML, speaker: currentVakta });
+                    } else if (className === 'p4') { 
+                        p4Buffer.push(outerHTML); 
+                        const shlokaId = parseShlokaNumber(textContent);
+                        
+                        if (shlokaId) {
+                            saveCurrentShlokaBlock(); 
+                            
+                            currentShlokaBlock = {
+                                type: 'shloka',
+                                id: shlokaId,
+                                speaker: currentVakta,
+                                p4: p4Buffer, 
+                                p5: [],
+                                p6: [],
+                                p1: []
+                            };
+                            
+                            const fullShlokaText = p4Buffer.map(html => {
+                                const tempDiv = document.createElement('div');
+                                tempDiv.innerHTML = html;
+                                return tempDiv.textContent || '';
+                            }).join(' ');
+                            
+                            indices.shlokas.push({ id: shlokaId, text: fullShlokaText, chapter: currentChapter });
+                            
+                            if(currentVakta) {
+                                indices.vaktas.push({ id: shlokaId, speaker: currentVakta, preview: getFirstThreeWords(fullShlokaText), chapter: currentChapter });
+                            }
+                            
+                            p4Buffer = []; 
+                        }
+                    } else if (className === 'p5' && currentShlokaBlock) { 
+                        currentShlokaBlock.p5.push(outerHTML);
+                        indices.padas.push({ id: currentShlokaBlock.id, text: textContent, chapter: currentChapter });
+                    } else if (className === 'p6' && currentShlokaBlock) { 
+                        currentShlokaBlock.p6.push(outerHTML);
+                        
+                        // UPDATED: Populate shabdaMap
+                        const words = textContent.split(/[,\s.]+/);
+                        for (const word of words) {
+                            const trimmedWord = word.trim();
+                            if (trimmedWord) {
+                                if (!shabdaMap.has(trimmedWord)) {
+                                    shabdaMap.set(trimmedWord, new Set());
+                                }
+                                shabdaMap.get(trimmedWord).add(currentShlokaBlock.id);
+                            }
+                        }
+                    } else if (className === 'p1') { 
+                        if (currentShlokaBlock) {
+                            currentShlokaBlock.p1.push(outerHTML);
+                        } else {
+                            chapterBlocks.push({ type: 'intro', html: outerHTML });
+                        }
+                    } else if (className === 'p7') { 
+                        saveCurrentShlokaBlock(); 
+                        p4Buffer = [];
+                    } else if (className === 'p11') {
+                        currentChapterEndLine = { type: 'chapterEnd', html: outerHTML };
+                    } else {
+                        chapterBlocks.push({ type: 'intro', html: outerHTML });
+                    }
+                }
+                
+                saveCurrentShlokaBlock(); 
+                
+                if (currentChapterEndLine) {
+                    chapterBlocks.push(currentChapterEndLine);
+                    currentChapterEndLine = null;
+                }
+
+                if (currentChapter > 0) {
+                    chapterData.set(currentChapter, {
+                        name: currentChapterName,
+                        blocks: chapterBlocks
+                    });
+                }
+
+                // UPDATED: Convert shabdaMap to sorted array
+                indices.shabdas = Array.from(shabdaMap.entries())
+                    .map(([word, idSet]) => ({
+                        text: word,
+                        ids: Array.from(idSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+                    }))
+                    .sort((a, b) => a.text.localeCompare(b.text, 'mr')); // Sort by Marathi alphabet
+
+            } catch (error) {
+                console.error("Data parsing failed:", error);
+            }
+        }
+        
+        // --- Navigation ---
+        function showView(viewName) {
+            if (currentView === viewName && viewName !== 'suchi' && viewName !== 'search') return;
+            
+            previousView = currentView;
+            currentView = viewName;
+
+            for (const key in views) {
+                views[key].classList.remove('active');
+            }
+            views[viewName].classList.add('active');
+            
+            window.scrollTo(0, 0);
+
+            // Render content for the view
+            if (viewName === 'grid') renderChapterGrid();
+            if (viewName === 'suchi') renderGitaSuchi();
+            if (viewName === 'search') renderSearchComponent();
+            if (viewName === 'path') renderGitaPath();
+        }
+
+        // --- Render Functions ---
+        function renderChapterGrid() {
+            const container = document.getElementById('chapter-grid-container');
+            let html = '';
+            Array.from(chapterData.entries()).forEach(([num, { name }], index) => {
+                html += `
+                    <button
+                        class="chapter-grid-button glass-panel animate-slide-in-up"
+                        data-chapter-num="${num}"
+                        style="animation-delay: ${index * 50}ms"
+                    >
+                        <span>${`अध्याय ${normalizeDevanagariNumber(String(num))}`}</span>
+                        <h3>${name}</h3>
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // UPDATED: To handle new shabda list and hide filter for vakta list
+        function renderGitaSuchi() {
+            const tabsContainer = document.getElementById('suchi-tabs-container');
+            const letterFilterContainer = document.getElementById('letter-filter-container');
+            const listContainer = document.getElementById('suchi-list-container');
+            
+            const tabs = [
+                { name: 'श्लोक सूची', data: indices.shlokas },
+                { name: 'पाद सूची', data: indices.padas },
+                { name: 'शब्द सूची', data: indices.shabdas },
+                { name: 'वक्ता सूची', data: indices.vaktas },
+            ];
+            
+            const isVaktaTab = currentSuchiTab === 3;
+            const isShabdTab = currentSuchiTab === 2;
+
+            // Render Tabs
+            tabsContainer.innerHTML = tabs.map((tab, index) => `
+                <button class="suchi-tab-button ${index === currentSuchiTab ? 'active' : ''}" data-tab-index="${index}">
+                    ${tab.name}
+                </button>
+            `).join('');
+
+            // Render Letter Filter (and hide if Vakta tab)
+            letterFilterContainer.style.display = isVaktaTab ? 'none' : 'flex';
+            let letterFilterHTML = `
+                <button class="letter-filter-button all-btn ${currentLetterFilter === '' ? 'active' : ''}" data-letter="">
+                    सर्व
+                </button>
+            `;
+            letterFilterHTML += DEVANAGARI_LETTERS.map(letter => `
+                <button class="letter-filter-button ${currentLetterFilter === letter ? 'active' : ''}" data-letter="${letter}">
+                    ${letter}
+                </button>
+            `).join('');
+            letterFilterContainer.innerHTML = letterFilterHTML;
+
+            // Render List
+            const currentData = tabs[currentSuchiTab].data;
+            // UPDATED: Don't filter Vakta tab
+            const filteredData = (currentLetterFilter && !isVaktaTab)
+                ? currentData.filter(item => (item.text || item.preview || '').replace(/<[^>]+>/g, '').trim().startsWith(currentLetterFilter))
+                : currentData;
+
+            let listHTML = '';
+            if (isShabdTab) {
+                // --- NEW: Render Aggregated Shabd Suchi ---
+                listHTML = '<ul class="suchi-list">';
+                listHTML += filteredData.map((item, index) => `
+                    <li class="suchi-item-aggregated animate-slide-in-up" style="animation-delay: ${Math.min(index * 10, 500)}ms">
+                        <span class="shabd-text">${item.text}</span>
+                        <div class="shabd-id-list">
+                            ${item.ids.map(id => `
+                                <button class="shabd-id-button" data-shloka-id="${id}" data-highlight="${item.text}">
+                                    ${id}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </li>
+                `).join('');
+                listHTML += '</ul>';
+
+            } else if (isVaktaTab) {
+                // --- Vakta Suchi (Grouped) ---
+                const groupedVaktas = filteredData.reduce((acc, item) => {
+                    (acc[item.speaker] = acc[item.speaker] || []).push(item);
+                    return acc;
+                }, {});
+                
+                listHTML = Object.entries(groupedVaktas).map(([speaker, items]) => `
+                    <div class="vakta-group animate-slide-in-up">
+                        <h3 class="vakta-group-header">${speaker}</h3>
+                        <ul class="suchi-list">
+                            ${items.map(item => `
+                                <li>
+                                    <button class="suchi-item-button" data-shloka-id="${item.id}" data-highlight="">
+                                        <span class="shloka-id">${item.id}</span>
+                                        <span class="shloka-text-shloka">${item.preview}</span>
+                                    </button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+            } else { 
+                // --- Shloka/Pada Suchi ---
+                listHTML = '<ul class="suchi-list">';
+                listHTML += filteredData.map((item, index) => {
+                    const textClass = currentSuchiTab === 0 ? 'shloka-text-shloka' : 'shloka-text-other';
+                    return `
+                        <li style="animation-delay: ${Math.min(index * 10, 500)}ms">
+                            <button class="suchi-item-button" data-shloka-id="${item.id}" data-highlight="">
+                                <span class="shloka-id">${item.id}</span>
+                                <span class="shloka-text ${textClass}">${item.text}</span>
+                            </button>
+                        </li>
+                    `;
+                }).join('');
+                listHTML += '</ul>';
+            }
+            listContainer.innerHTML = listHTML;
+        }
+
+        function renderSearchComponent() {
+            const scopesContainer = document.getElementById('search-scopes-container');
+            const resultsInfo = document.getElementById('search-results-info');
+            const resultsList = document.getElementById('search-results-list');
+            
+            const scopeOptions = [
+                { id: 'all', name: 'सर्व', icon: 'filter' },
+                { id: 'shloka', name: 'श्लोक', icon: 'book-open' },
+                { id: 'pada', name: 'पाद', icon: 'baseline' },
+                { id: 'shabda', name: 'शब्द', icon: 'whole-word' },
+                { id: 'vakta', name: 'वक्ता', icon: 'user' },
+                { id: 'id', name: 'श्लोक ID', icon: 'baseline' },
+            ];
+
+            scopesContainer.innerHTML = scopeOptions.map(opt => `
+                <button class="scope-button glass-panel ${searchScope === opt.id ? 'active' : ''}" data-scope="${opt.id}">
+                    <i data-lucide="${opt.icon}"></i>
+                    ${opt.name}
+                </button>
+            `).join('');
+            
+            lucide.createIcons(); // Re-render icons
+
+            // Search Logic
+            let results = [];
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                const idSearchTerm = term.replace(/[\/.\s]+/g, '.');
+
+                if (searchScope === 'id' || (searchScope === 'all' && /^\d+\.\d+$/.test(idSearchTerm))) {
+                    const found = indices.shlokas.find(item => item.id === idSearchTerm);
+                    if (found) results = [{ ...found, type: 'श्लोक ID' }];
+                } else {
+                    const rawResults = [];
+                    const searchIn = (list, type) => list.forEach(item => {
+                        if (item.text.toLowerCase().includes(term)) rawResults.push({ ...item, type });
+                    });
+                    
+                    if (searchScope === 'all' || searchScope === 'shloka') searchIn(indices.shlokas, 'श्लोक');
+                    if (searchScope === 'all' || searchScope === 'pada') searchIn(indices.padas, 'पाद');
+                    if (searchScope === 'all' || searchScope === 'shabda') searchIn(indices.shabdas, 'शब्द'); // This will now search the word text
+                    if (searchScope === 'all' || searchScope === 'vakta') {
+                        indices.vaktas.forEach(item => {
+                            if (item.speaker.toLowerCase().includes(term)) {
+                                rawResults.push({ ...item, text: `${item.speaker} - ${item.preview}`, type: 'वक्ता' });
+                            }
+                        });
+                    }
+                    
+                    const resultMap = new Map();
+                    rawResults.forEach(item => {
+                        // For aggregated shabdas, we must create entries for each ID
+                        if (item.type === 'शब्द' && item.ids) {
+                            item.ids.forEach(id => {
+                                if (!resultMap.has(id)) {
+                                    resultMap.set(id, { ...item, id: id, text: item.text }); // Use the word as text
+                                }
+                            });
+                        } else if (!resultMap.has(item.id) || (resultMap.has(item.id) && item.type === 'श्लोक')) {
+                            resultMap.set(item.id, item);
+                        }
+                    });
+                    results = Array.from(resultMap.values()).sort((a,b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+                }
+            }
+
+            // Render Results
+            resultsInfo.textContent = searchTerm ? `'${searchTerm}' साठी ${results.length} निकाल सापडले.` : '';
+            
+            const highlight = (text, term) => {
+                if (!term) return text;
+                const regex = new RegExp(`(${term})`, 'gi');
+                return text.replace(regex, `<mark>$1</mark>`);
+            };
+
+            resultsList.innerHTML = results.map((item, index) => {
+                const textClass = (item.type === 'श्लोक') ? 'shloka-text-shloka' : 'shloka-text-other';
+                return `
+                    <li class="animate-slide-in-up" style="animation-delay: ${index * 50}ms">
+                        <button class="search-result-item glass-panel" data-shloka-id="${item.id}" data-highlight="${searchTerm}">
+                            <div class="search-result-header">
+                                <span class="shloka-id">श्लोक ${item.id}</span>
+                                <span class="shloka-type">${item.type}</span>
+                            </div>
+                            <p class="search-result-text ${textClass}">${highlight(item.text, searchTerm)}</p>
+                        </button>
+                    </li>
+                `;
+            }).join('');
+        }
+        
+        function renderGitaPath(showAll = false) {
+            const container = document.getElementById('gita-path-content');
+            const chapter = chapterData.get(currentChapterNum);
+            if (!chapter) {
+                container.innerHTML = '<p>अध्याय सापडला नाही.</p>';
+                return;
+            }
+
+            const highlight = (htmlStringArray, term) => {
+                let combinedHtml = htmlStringArray.join('');
+                if (term) {
+                    const regex = new RegExp(`(${term})`, 'gi');
+                    combinedHtml = combinedHtml.replace(regex, `<mark>$1</mark>`);
+                }
+                // Clean and center shlokas
+                combinedHtml = combinedHtml.replace(
+                    /<p class="p4"><span class="s4">([\s\S]*?)।।([०-९]+\/[०-९]+)।।<\/span><\/p>/g,
+                    (match, content) => `<p class="p4"><span class="s4"><div class="shloka-center">${content}</div></span></p>`
+                );
+                combinedHtml = combinedHtml.replace(
+                    /<p class="p4"><span class="s4">([\s\S]*?)<\/span><\/p>/g,
+                    (match, content) => content.includes('shloka-center') ? match : `<p class="p4"><span class="s4"><div class="shloka-center">${content}</div></span></p>`
+                );
+                return combinedHtml;
+            };
+
+            container.innerHTML = chapter.blocks.map((block, index) => {
+                switch (block.type) {
+                    case 'chapterTitle':
+                    case 'vakta':
+                    case 'intro':
+                    case 'chapterEnd': 
+                        return `<div class="animate-slide-in-up">${block.html}</div>`;
+                    case 'shloka':
+                        const p1Visible = showAll ? 'visible' : '';
+                        const p5p6Visible = showAll ? 'visible' : '';
+                        return `
+                            <div id="shloka-${block.id}" class="shloka-block glass-panel animate-slide-in-up">
+                                <div class="shloka-block-p4" data-shloka-id="${block.id}">
+                                    ${highlight(block.p4, highlightTerm)}
+                                </div>
+                                <div class="shloka-details shloka-details-p1 ${p1Visible}">
+                                    ${highlight(block.p1, highlightTerm)}
+                                </div>
+                                <div class="shloka-details shloka-details-p5p6 ${p5p6Visible}" style="margin-top: 0.5rem;">
+                                    ${highlight(block.p5, highlightTerm)}
+                                    ${highlight(block.p6, highlightTerm)}
+                                </div>
+                            </div>
+                        `;
+                    default: return '';
+                }
+            }).join('');
+
+            // Scroll and highlight
+            if (scrollToShloka) {
+                const targetEl = document.getElementById(`shloka-${scrollToShloka}`);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetEl.classList.add('highlight-shloka');
+                    setTimeout(() => {
+                        targetEl.classList.remove('highlight-shloka');
+                        scrollToShloka = null; // Reset
+                        highlightTerm = null; // Reset
+                    }, 2000);
+                }
+            }
+        }
+        
+        // --- Tap Logic ---
+        let tapTimer = null;
+        function handleShlokaTap(event) {
+            const p4Element = event.target.closest('.shloka-block-p4');
+            if (!p4Element) return;
+            
+            if (window.getSelection().toString()) return; // Don't tap if user is selecting text
+
+            const shlokaBlock = p4Element.closest('.shloka-block');
+            const p1Details = shlokaBlock.querySelector('.shloka-details-p1');
+            const p5p6Details = shlokaBlock.querySelector('.shloka-details-p5p6');
+
+            if (!tapTimer) {
+                // Single Tap
+                tapTimer = setTimeout(() => {
+                    p1Details.classList.toggle('visible');
+                    tapTimer = null;
+                }, 250);
+            } else {
+                // Double Tap
+                clearTimeout(tapTimer);
+                tapTimer = null;
+                p5p6Details.classList.toggle('visible');
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Navbar
+            nav.logo.addEventListener('click', () => showView('grid'));
+            nav.suchi.addEventListener('click', () => showView('suchi'));
+            nav.search.addEventListener('click', () => showView('search'));
+            backButton.addEventListener('click', () => showView(previousView));
+
+            // Theme Toggle
+            themeToggle.addEventListener('click', () => {
+                theme = theme === 'dark' ? 'light' : 'dark';
+                docEl.className = theme;
+                iconMoon.style.display = theme === 'dark' ? 'none' : 'block';
+                iconSun.style.display = theme === 'dark' ? 'block' : 'none';
+            });
+            
+            // Font Size
+            fontDecrease.addEventListener('click', () => {
+                fontSize = Math.max(10, fontSize - 1);
+                docEl.style.setProperty('--font-size-base', `${fontSize}px`);
+            });
+            fontIncrease.addEventListener('click', () => {
+                fontSize = Math.min(32, fontSize + 2);
+                docEl.style.setProperty('--font-size-base', `${fontSize}px`);
+            });
+
+            // --- Event Delegation for Main Content ---
+            mainContent.addEventListener('click', (event) => {
+                // Chapter Grid Button
+                const gridButton = event.target.closest('.chapter-grid-button');
+                if (gridButton) {
+                    currentChapterNum = Number(gridButton.dataset.chapterNum);
+                    showView('path');
+                    return;
+                }
+
+                // Suchi Tab
+                const suchiTab = event.target.closest('.suchi-tab-button');
+                if (suchiTab) {
+                    currentSuchiTab = Number(suchiTab.dataset.tabIndex);
+                    currentLetterFilter = ''; // Reset filter
+                    renderGitaSuchi(); // Re-render
+                    return;
+                }
+                
+                // Letter Filter
+                const letterButton = event.target.closest('.letter-filter-button');
+                if (letterButton) {
+                    currentLetterFilter = letterButton.dataset.letter;
+                    renderGitaSuchi(); // Re-render
+                    return;
+                }
+                
+                // Suchi/Search Item
+                // UPDATED: Added .shabd-id-button
+                const itemButton = event.target.closest('.suchi-item-button, .search-result-item, .shabd-id-button');
+                if (itemButton) {
+                    currentChapterNum = Number(itemButton.dataset.shlokaId.split('.')[0]);
+                    scrollToShloka = itemButton.dataset.shlokaId;
+                    highlightTerm = itemButton.dataset.highlight || null;
+                    showView('path');
+                    return;
+                }
+                
+                // Search Scope
+                const scopeButton = event.target.closest('.scope-button');
+                if (scopeButton) {
+                    searchScope = scopeButton.dataset.scope;
+                    renderSearchComponent(); // Re-render scopes
+                    renderSearchComponent(); // Re-render results
+                    return;
+                }
+                
+                // Shloka Tap
+                handleShlokaTap(event);
+            });
+            
+            // Search Input
+            document.getElementById('search-input').addEventListener('input', (event) => {
+                searchTerm = event.target.value;
+                renderSearchComponent(); // Re-render results
+            });
+            
+            // Toggle All Button (Gita Path)
+            document.getElementById('toggle-all-button').addEventListener('click', (event) => {
+                const button = event.currentTarget;
+                const icon = document.getElementById('toggle-all-icon');
+                const text = document.getElementById('toggle-all-text');
+                
+                const isShowingAll = button.dataset.showAll === 'true';
+                const newShowAll = !isShowingAll;
+                
+                button.dataset.showAll = newShowAll;
+                text.textContent = newShowAll ? 'सर्व लपवा' : 'सर्व दाखवा';
+                icon.setAttribute('data-lucide', newShowAll ? 'eye-off' : 'eye');
+                lucide.createIcons(); // Redraw icon
+                
+                document.querySelectorAll('#gita-path-content .shloka-details').forEach(el => {
+                    el.classList.toggle('visible', newShowAll);
+                });
+            });
+        }
+
+        // --- App Initialization ---
+        function init() {
+            // 1. Set initial theme (default is dark)
+            iconMoon.style.display = 'none';
+            iconSun.style.display = 'block';
+
+            // 2. Parse data
+            parseData();
+            
+            // 3. Setup listeners
+            setupEventListeners();
+            
+            // 4. Show initial view
+            showView('grid');
+            
+            // 5. Hide loading screen
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500); // Give a moment for first render
+            
+            // 6. Create all icons
+            lucide.createIcons();
+        }
+
+        // Run the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
